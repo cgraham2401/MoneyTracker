@@ -23,6 +23,10 @@ log.txt
 /platforms
 /plugins
 
+# Environment Variables
+/src/environments/environment.prod.ts
+/src/environments/environment.ts
+
 # Compiled output
 /dist
 /tmp
