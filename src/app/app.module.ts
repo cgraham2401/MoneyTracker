@@ -11,10 +11,11 @@ import { AppRoutingModule } from './app-routing.module';
 import { AngularFireModule } from '@angular/fire/compat';
 import { AngularFirestoreModule } from '@angular/fire/compat/firestore';
 import { AngularFireAuthModule } from '@angular/fire/compat/auth';
+import { environment } from 'src/environments/environment';
 
 // Firebase configuration
 const firebaseConfig = {
-  apiKey: "AIzaSyBCFt7ToeqtYfRZJTQAME29RVISMU9BZOk",
+  apiKey: environment.firebaseApiKey,
   authDomain: "moneytracker-d40d1.firebaseapp.com",
   projectId: "moneytracker-d40d1",
   storageBucket: "moneytracker-d40d1.appspot.com",
