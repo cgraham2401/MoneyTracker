@@ -41,7 +41,7 @@
       <ion-item>
         <ion-label>Category</ion-label>
         <ion-select name="category" ngModel placeholder="Select One">
-          <ion-select-option *ngFor="let category of categories" [value]="category">
+          <ion-select-option *ngFor="let category of categories" [value]="category.name">
             {{ category.name }}
           </ion-select-option>
         </ion-select>
