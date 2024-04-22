@@ -23,4 +23,19 @@ export class TransactionService {
     return this.firestore.collection<Transaction>('transactions', ref => ref.where('userId', '==', userId).orderBy('date', 'desc'))
       .valueChanges({ idField: 'id' });
 }
+addTransaction(transaction: Transaction): Promise<void> {
+  return this.firestore.collection<Transaction>('transactions').add(transaction)
+    .then(documentReference => {
+      console.log('Transaction added with ID:', documentReference.id);
+      return; 
+    });
+}
+// Add a method to fetch transactions by type
+getTransactionsByType(type: string): Observable<Transaction[]> {
+  return this.firestore.collection<Transaction>('transactions', 
+    ref => ref.where('type', '==', type)
+              .orderBy('date', 'desc'))
+    .valueChanges();
+}
+
 }

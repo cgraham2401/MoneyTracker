@@ -1,0 +1,57 @@
+<ion-header [translucent]="true">
+  <ion-toolbar>
+    <ion-buttons slot="start">
+      <ion-menu-button></ion-menu-button> 
+    </ion-buttons>
+    <ion-title>Income Transactions</ion-title>
+  </ion-toolbar>
+</ion-header>
+
+<ion-content>
+  <ion-list>
+    <!-- List current transactions here -->
+    <ion-item *ngFor="let transaction of transactions | async">
+      <ion-label>
+        <h2>{{ transaction.amount | currency }}</h2>
+        <!-- <p>{{ transaction.date.toDate() | date:'mediumDate' }}</p> -->
+        <!-- Add more details if necessary -->
+      </ion-label>
+    </ion-item>
+  </ion-list>
+  <ion-button expand="block" (click)="showAddForm = true">Add Income</ion-button>
+
+  <!-- Add transaction form, shown when showAddForm is true -->
+  <div *ngIf="showAddForm">
+    <form #incomeForm="ngForm" (ngSubmit)="addTransaction(incomeForm.value)">
+      <ion-item>
+        <ion-label position="floating">Amount</ion-label>
+        <ion-input type="number" name="amount" ngModel required></ion-input>
+      </ion-item>
+      <ion-item>
+        <ion-label position="floating">Date</ion-label>
+        <ion-datetime 
+          presentation="date"
+          display-format="MMM DD, YYYY"
+          picker-format="MMM DD YYYY"
+          name="date"
+          ngModel
+          required>
+        </ion-datetime>
+      </ion-item>
+      <ion-item>
+        <ion-label>Category</ion-label>
+        <ion-select name="category" ngModel placeholder="Select One">
+          <ion-select-option *ngFor="let category of categories" [value]="category">
+            {{ category.name }}
+          </ion-select-option>
+        </ion-select>
+      </ion-item>
+      <ion-item>
+        <ion-label position="floating">Description</ion-label>
+        <ion-textarea name="description" ngModel></ion-textarea>
+      </ion-item>
+      <ion-button type="submit" expand="block">Add Income</ion-button>
+    </form>
+    <ion-button type="submit" expand="block">Submit</ion-button>
+  </div>
+</ion-content>

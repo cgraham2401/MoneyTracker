@@ -1,7 +1,10 @@
+import { Timestamp } from 'firebase/firestore';
+
 export interface Transaction {
     amount: number;
-    type: string; // 'income' or 'expense'
-    date?: Date;  
+    type: 'income' | 'expense';
+    payee?:string
+    date?: Timestamp; 
     category?: string;
     description?: string;
   }

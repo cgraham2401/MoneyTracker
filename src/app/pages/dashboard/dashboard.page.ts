@@ -12,6 +12,7 @@ export class DashboardPage implements OnInit {
   incomeTotal!: Observable<number>;
   expenseTotal!: Observable<number>;
   netTotal!: Observable<number>;
+  hasData: boolean = false; 
 
   constructor(private transactionService: TransactionService) {}
 
