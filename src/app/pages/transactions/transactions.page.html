@@ -1,24 +1,29 @@
 <ion-header [translucent]="true">
   <ion-toolbar>
     <ion-buttons slot="start">
-      <ion-menu-button></ion-menu-button> 
+      <ion-menu-button></ion-menu-button>
     </ion-buttons>
     <ion-title>Transactions</ion-title>
   </ion-toolbar>
 </ion-header>
 
 <ion-content>
-  <ion-list *ngIf="hasTransactions; else noTransactionsTemplate">
-    <ion-item *ngFor="let transaction of transactions | async">
-      <ion-label>
-        <h2>{{ transaction.payee }}</h2>
-        <p>Amount: {{ transaction.amount | currency }}</p>
-        <p>Date: {{ transaction.date?.toDate() | date:'mediumDate' }}</p>
-        <p>Category: {{ transaction.category }}</p>
-        <p>Description: {{ transaction.description }}</p>
-      </ion-label>
-    </ion-item>
-  </ion-list>
+  <ion-grid *ngIf="hasTransactions; else noTransactionsTemplate">
+    <ion-row>
+      <ion-col>Type</ion-col>
+      <ion-col>Amount</ion-col>
+      <ion-col>Date</ion-col>
+      <ion-col>Category</ion-col>
+      <ion-col>Description</ion-col>
+    </ion-row>
+    <ion-row *ngFor="let transaction of transactions | async">
+      <ion-col>{{ transaction.type }}</ion-col>
+      <ion-col>{{ transaction.amount | currency }}</ion-col>
+      <ion-col>{{ transaction.date?.toDate() | date:'mediumDate' }}</ion-col>
+      <ion-col>{{ transaction.category }}</ion-col>
+      <ion-col>{{ transaction.description }}</ion-col>
+    </ion-row>
+  </ion-grid>
 
   <ng-template #noTransactionsTemplate>
     <ion-item>

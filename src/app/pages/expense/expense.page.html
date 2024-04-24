@@ -1,7 +1,7 @@
 <ion-header [translucent]="true">
   <ion-toolbar>
     <ion-buttons slot="start">
-      <ion-menu-button></ion-menu-button> 
+      <ion-menu-button></ion-menu-button>
     </ion-buttons>
     <ion-title>Expense Transactions</ion-title>
   </ion-toolbar>
@@ -13,34 +13,48 @@
     <ion-item *ngFor="let transaction of transactions | async">
       <ion-label>
         <h2>{{ transaction.amount | currency }}</h2>
-        <!-- <p>{{ transaction.date.toDate() | date:'mediumDate' }}</p> -->
-        <!-- Add more details if necessary -->
+        <p>Category: {{ transaction.category }}</p>
+        <p>Date: {{ transaction.date?.toDate() | date:'mediumDate' }}</p>
+        <p>Description: {{ transaction.description }}</p>
       </ion-label>
     </ion-item>
   </ion-list>
-  <ion-button expand="block" (click)="showAddForm = true">Add Expense</ion-button>
+  <!-- Button to show form -->
+  <ion-button expand="block" *ngIf="!showAddForm" (click)="showAddForm = true">Add Expense</ion-button>
 
-  <!-- Add transaction form, shown when showAddForm is true -->
+  <!-- Transaction form, shown when showAddForm is true -->
   <div *ngIf="showAddForm">
-    <form #incomeForm="ngForm" (ngSubmit)="addTransaction(incomeForm.value)">
+    <form #incomeForm="ngForm" (ngSubmit)="addTransaction(incomeForm.value); showAddForm = false;">
       <ion-item>
         <ion-label position="floating">Amount</ion-label>
         <ion-input type="number" name="amount" ngModel required></ion-input>
       </ion-item>
       <ion-item>
         <ion-label position="floating">Date</ion-label>
-        <ion-datetime displayFormat="MMM DD, YYYY" name="date" ngModel required></ion-datetime>
+        <ion-datetime 
+          presentation="date"
+          display-format="MMM DD, YYYY"
+          picker-format="MMM DD YYYY"
+          name="date"
+          ngModel
+          required>
+        </ion-datetime>
       </ion-item>
       <ion-item>
-        <ion-label position="floating">Category</ion-label>
-        <ion-input type="text" name="category" ngModel></ion-input>
+        <ion-label>Category</ion-label>
+        <ion-select name="category" ngModel placeholder="Select One">
+          <ion-select-option *ngFor="let category of categories" [value]="category.name">
+            {{ category.name }}
+          </ion-select-option>
+        </ion-select>
       </ion-item>
       <ion-item>
         <ion-label position="floating">Description</ion-label>
         <ion-textarea name="description" ngModel></ion-textarea>
       </ion-item>
-      <ion-button type="submit" expand="block">Add Income</ion-button>
+      <ion-button type="submit" expand="block">Submit</ion-button>
     </form>
-    <ion-button type="submit" expand="block">Submit</ion-button>
+    <!-- Optionally add a cancel button to hide form -->
+    <ion-button expand="block" (click)="showAddForm = false">Cancel</ion-button>
   </div>
 </ion-content>

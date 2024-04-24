@@ -1,7 +1,7 @@
 <ion-header [translucent]="true">
   <ion-toolbar>
     <ion-buttons slot="start">
-      <ion-menu-button></ion-menu-button> 
+      <ion-menu-button></ion-menu-button>
     </ion-buttons>
     <ion-title>Income Transactions</ion-title>
   </ion-toolbar>
@@ -13,16 +13,18 @@
     <ion-item *ngFor="let transaction of transactions | async">
       <ion-label>
         <h2>{{ transaction.amount | currency }}</h2>
-        <!-- <p>{{ transaction.date.toDate() | date:'mediumDate' }}</p> -->
-        <!-- Add more details if necessary -->
+        <p>Category: {{ transaction.category }}</p>
+        <p>Date: {{ transaction.date?.toDate() | date:'mediumDate' }}</p>
+        <p>Description: {{ transaction.description }}</p>
       </ion-label>
     </ion-item>
   </ion-list>
-  <ion-button expand="block" (click)="showAddForm = true">Add Income</ion-button>
+  <!-- Button to show form -->
+  <ion-button expand="block" *ngIf="!showAddForm" (click)="showAddForm = true">Add Income</ion-button>
 
-  <!-- Add transaction form, shown when showAddForm is true -->
+  <!-- Transaction form, shown when showAddForm is true -->
   <div *ngIf="showAddForm">
-    <form #incomeForm="ngForm" (ngSubmit)="addTransaction(incomeForm.value)">
+    <form #incomeForm="ngForm" (ngSubmit)="addTransaction(incomeForm.value); showAddForm = false;">
       <ion-item>
         <ion-label position="floating">Amount</ion-label>
         <ion-input type="number" name="amount" ngModel required></ion-input>
@@ -50,8 +52,9 @@
         <ion-label position="floating">Description</ion-label>
         <ion-textarea name="description" ngModel></ion-textarea>
       </ion-item>
-      <ion-button type="submit" expand="block">Add Income</ion-button>
+      <ion-button type="submit" expand="block">Submit</ion-button>
     </form>
-    <ion-button type="submit" expand="block">Submit</ion-button>
+    <!-- Optionally add a cancel button to hide form -->
+    <ion-button expand="block" (click)="showAddForm = false">Cancel</ion-button>
   </div>
 </ion-content>

@@ -29,6 +29,13 @@
         <ion-badge color="danger" style="margin-left: 10px;">{{ expenseTotal | async | currency }}</ion-badge>
       </ion-label>
     </ion-item>
+    
+    <ion-item>
+      <ion-label>
+        Net Total:
+        <ion-badge color="primary" style="margin-left: 10px;">{{ netTotal | async | currency }}</ion-badge>
+      </ion-label>
+    </ion-item>
   </div>
 
   <ng-template #noDataTemplate>

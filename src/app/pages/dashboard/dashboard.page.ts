@@ -1,7 +1,8 @@
 import { Component, OnInit } from '@angular/core';
 import { Observable, combineLatest } from 'rxjs';
-import { map } from 'rxjs/operators';
+import { map, tap } from 'rxjs/operators';
 import { TransactionService } from '../../services/transaction.service';
+import { AuthService } from '../../services/auth.service';
 
 @Component({
   selector: 'app-dashboard',
@@ -12,20 +13,44 @@ export class DashboardPage implements OnInit {
   incomeTotal!: Observable<number>;
   expenseTotal!: Observable<number>;
   netTotal!: Observable<number>;
-  hasData: boolean = false; 
+  hasData = false;
 
-  constructor(private transactionService: TransactionService) {}
+  constructor(
+    private transactionService: TransactionService,
+    private authService: AuthService
+  ) {}
 
   ngOnInit() {
-    this.fetchTotals();
+    this.authService.currentUserId$.subscribe(userId => {
+      console.log('Dashboard User ID:', userId);
+      if (userId) {
+        this.fetchTotals(userId);
+      } else {
+        console.error('User ID not available, user might not be logged in');
+        this.hasData = false;
+      }
+    });
   }
-
-  fetchTotals() {
-    this.incomeTotal = this.transactionService.getTotal('income');
-    this.expenseTotal = this.transactionService.getTotal('expense');
-
+  
+  fetchTotals(userId: string) {
+    this.incomeTotal = this.transactionService.getTotalByUserId('income', userId);
+    this.expenseTotal = this.transactionService.getTotalByUserId('expense', userId);
+  
     this.netTotal = combineLatest([this.incomeTotal, this.expenseTotal]).pipe(
-      map(([income, expense]) => income - expense)
+      tap(([income, expense]) => console.log(`Income: ${income}, Expense: ${expense}`)),
+      map(([income, expense]) => {
+        const hasIncomeOrExpense = income > 0 || expense > 0;
+        this.hasData = hasIncomeOrExpense;
+        console.log(`Net Total Computed: ${income - expense}`);
+        return income - expense;
+      })
     );
+  
+    // Subscribe to netTotal to trigger the observables and log final value
+    this.netTotal.subscribe(net => {
+      console.log(`Net Total: ${net}`);
+    }, error => {
+      console.error('Error computing net total:', error);
+    });
   }
 }
