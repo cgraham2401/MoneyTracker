@@ -1,11 +1,12 @@
 import { Component, OnInit, OnDestroy } from '@angular/core';
-import { Observable, Subject } from 'rxjs';
-import { takeUntil } from 'rxjs/operators';
+import { Observable, Subject, Subscription, of } from 'rxjs';
 import { AuthService } from '../../services/auth.service';
 import { TransactionService } from '../../services/transaction.service';
 import { Transaction } from '../../models/transaction.model';
+import { DateSelectionService } from '../../services/date-selection.service';
 import { AngularFirestore } from '@angular/fire/compat/firestore';
 import { Timestamp } from 'firebase/firestore';
+import { takeUntil } from 'rxjs/operators';
 
 interface Category {
   name: string;
@@ -18,26 +19,44 @@ interface Category {
   styleUrls: ['./expense.page.scss'],
 })
 export class ExpensePage implements OnInit, OnDestroy {
-  private destroy$ = new Subject<void>();
   transactions!: Observable<Transaction[]>;
+  private destroy$ = new Subject<void>();
   categories: Category[] = [];
   showAddForm = false;
+  selectedDate: string = new Date().toISOString();
+  displayedMonth: Date = new Date(this.selectedDate);
+  showCalendar: boolean = false;
+  private subscriptions = new Subscription();
+  hasTransactions: boolean = false;
 
   constructor(
     private authService: AuthService,
     private transactionService: TransactionService,
-    private firestore: AngularFirestore
+    private dateSelectionService: DateSelectionService,
+    private firestore: AngularFirestore,
   ) {}
 
   ngOnInit() {
-    this.authService.currentUserId$.pipe(
-      takeUntil(this.destroy$)
-    ).subscribe(userId => {
+    this.fetchCategories(); // Ensure categories are fetched at component initialization
+    this.subscriptions.add(this.dateSelectionService.selectedDate$.subscribe(date => {
+      this.selectedDate = date;
+      this.displayedMonth = new Date(date);
+      this.loadTransactions();
+    }));
+    this.loadTransactions(); // Load initially
+  }
+
+  loadTransactions() {
+    this.authService.currentUserId$.subscribe(userId => {
       if (userId) {
-        this.transactions = this.transactionService.getTransactionsByTypeAndUserId('expense', userId);
-        this.fetchCategories(); // Fetch categories when we know the user is logged in
+        this.transactions = this.transactionService.getTransactionsByTypeAndUserIdAndDate('expense', userId, new Date(this.selectedDate));
+        this.transactions.subscribe(list => {
+          this.hasTransactions = list && list.length > 0;
+        });
       } else {
         console.error('User ID not available, user might not be logged in');
+        this.transactions = of([]); 
+        this.hasTransactions = false;
       }
     });
   }
@@ -63,7 +82,8 @@ export class ExpensePage implements OnInit, OnDestroy {
       type: 'expense',
       date: Timestamp.fromDate(new Date(formValues.date)),
       category: formValues.category,
-      description: formValues.description
+      description: formValues.description || '',
+      payee: formValues.payee,
     };
     console.log('Attempting to add expense transaction:', transaction);
     this.transactionService.addTransaction(transaction).then(() => {
@@ -74,7 +94,28 @@ export class ExpensePage implements OnInit, OnDestroy {
     });
   }
 
+  selectCurrentMonth() {
+    this.dateSelectionService.selectCurrentMonth();
+    this.loadTransactions();
+  }
+
+  openCalendar() {
+    this.showCalendar = true;
+  }
+
+  cancelCalendar() {
+    this.showCalendar = false;
+  }
+
+  handleDateChange(event: any) {
+    const newDate: string = event.detail.value;
+    this.dateSelectionService.setSelectedDate(newDate);
+    this.displayedMonth = new Date(newDate);
+    this.loadTransactions();
+  }
+
   ngOnDestroy() {
+    this.subscriptions.unsubscribe();
     this.destroy$.next();
     this.destroy$.complete();
   }

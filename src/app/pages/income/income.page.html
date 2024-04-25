@@ -8,17 +8,39 @@
 </ion-header>
 
 <ion-content>
-  <ion-list>
-    <!-- List current transactions here -->
-    <ion-item *ngFor="let transaction of transactions | async">
-      <ion-label>
-        <h2>{{ transaction.amount | currency }}</h2>
-        <p>Category: {{ transaction.category }}</p>
-        <p>Date: {{ transaction.date?.toDate() | date:'mediumDate' }}</p>
-        <p>Description: {{ transaction.description }}</p>
+  <ion-button (click)="selectCurrentMonth()">Current Month</ion-button>
+  <ion-item>
+    <ion-label>Choose Month:</ion-label>
+    <ion-button fill="clear" (click)="openCalendar()">
+      {{ displayedMonth | date: 'MMMM yyyy' }}
+    </ion-button>
+  </ion-item>
+
+  <ion-grid *ngIf="hasTransactions; else noTransactionsTemplate">
+    <ion-row>
+      <ion-col>Date</ion-col>
+      <ion-col>Payee</ion-col>
+      <ion-col>Description</ion-col>
+      <ion-col>Category</ion-col>
+      <ion-col>Amount</ion-col>
+    </ion-row>
+    <ion-row *ngFor="let transaction of transactions | async">
+      <ion-col>{{ transaction.date.toDate() | date:'mediumDate' }}</ion-col>
+      <ion-col>{{ transaction.payee }}</ion-col>
+      <ion-col>{{ transaction.description }}</ion-col>
+      <ion-col>{{ transaction.category }}</ion-col>
+      <ion-col>{{ transaction.amount | currency }}</ion-col>
+    </ion-row>
+  </ion-grid>
+
+  <ng-template #noTransactionsTemplate>
+    <ion-item>
+      <ion-label class="ion-text-center">
+        No transactions to display.
       </ion-label>
     </ion-item>
-  </ion-list>
+  </ng-template>
+
   <!-- Button to show form -->
   <ion-button expand="block" *ngIf="!showAddForm" (click)="showAddForm = true">Add Income</ion-button>
 
@@ -52,9 +74,26 @@
         <ion-label position="floating">Description</ion-label>
         <ion-textarea name="description" ngModel></ion-textarea>
       </ion-item>
+      <ion-item>
+        <ion-label position="floating">Payee</ion-label>
+        <ion-input type="text" name="payee" ngModel required></ion-input>
+      </ion-item>      
       <ion-button type="submit" expand="block">Submit</ion-button>
     </form>
     <!-- Optionally add a cancel button to hide form -->
     <ion-button expand="block" (click)="showAddForm = false">Cancel</ion-button>
   </div>
 </ion-content>
+
+<ion-modal [keepContentsMounted]="true" [isOpen]="showCalendar" (didDismiss)="cancelCalendar()">
+  <ng-template>
+    <ion-datetime
+      presentation="month-year"
+      [showDefaultButtons]="true"
+      doneText="Confirm"
+      cancelText="Cancel"
+      [(ngModel)]="selectedDate"
+      (ionChange)="handleDateChange($event)"
+    ></ion-datetime>
+  </ng-template>
+</ion-modal>

@@ -1,7 +1,7 @@
 <ion-header [translucent]="true">
   <ion-toolbar>
     <ion-buttons slot="start">
-      <ion-menu-button></ion-menu-button> 
+      <ion-menu-button></ion-menu-button>
     </ion-buttons>
     <ion-title>Dashboard</ion-title>
   </ion-toolbar>
@@ -13,36 +13,52 @@
       <ion-title size="large">Dashboard</ion-title>
     </ion-toolbar>
   </ion-header>
+  
+  <ion-button (click)="selectCurrentMonth()">Current Month</ion-button>
+  
+  <ion-item>
+    <ion-label>Choose Month:</ion-label>
+    <ion-button fill="clear" (click)="openCalendar()">
+      {{ displayedMonth | date: 'MMMM yyyy' }}
+    </ion-button>
+  </ion-item>
 
-  <!-- display totals or a no data message -->
   <div *ngIf="hasData; else noDataTemplate">
     <ion-item>
-      <ion-label>
-        Total Income:
-        <ion-badge color="success" style="margin-left: 10px;">{{ incomeTotal | async | currency }}</ion-badge>
+      <ion-label>Total Income:
+        <ion-badge color="success">{{ incomeTotal | async | currency }}</ion-badge>
       </ion-label>
     </ion-item>
 
     <ion-item>
-      <ion-label>
-        Total Expenses:
-        <ion-badge color="danger" style="margin-left: 10px;">{{ expenseTotal | async | currency }}</ion-badge>
+      <ion-label>Total Expenses:
+        <ion-badge color="danger">{{ expenseTotal | async | currency }}</ion-badge>
       </ion-label>
     </ion-item>
     
     <ion-item>
-      <ion-label>
-        Net Total:
-        <ion-badge color="primary" style="margin-left: 10px;">{{ netTotal | async | currency }}</ion-badge>
+      <ion-label>Net Total:
+        <ion-badge color="primary">{{ netTotal | async | currency }}</ion-badge>
       </ion-label>
     </ion-item>
   </div>
 
   <ng-template #noDataTemplate>
     <ion-item>
-      <ion-label class="ion-text-center">
-        No data to display. Please add transactions to display summary.
-      </ion-label>
+      <ion-label class="ion-text-center">No data to display. Please add transactions to display summary.</ion-label>
     </ion-item>
   </ng-template>
 </ion-content>
+
+<ion-modal [keepContentsMounted]="true" [isOpen]="showCalendar" (didDismiss)="cancelCalendar()">
+  <ng-template>
+    <ion-datetime
+      presentation="month-year"
+      [showDefaultButtons]="true"
+      doneText="Confirm"
+      cancelText="Cancel"
+      [(ngModel)]="selectedDate"
+      (ionChange)="handleDateChange($event)"
+    ></ion-datetime>
+  </ng-template>
+</ion-modal>

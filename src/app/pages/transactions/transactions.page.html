@@ -8,28 +8,55 @@
 </ion-header>
 
 <ion-content>
+   <ion-button (click)="selectCurrentMonth()">Current Month</ion-button>
+   <!-- <ion-button (click)="selectLastThreeMonths()">Last 3 Months</ion-button> -->
+   
+   <ion-item>
+    <ion-label>Choose Month:</ion-label>
+    <ion-button fill="clear" (click)="openCalendar()">
+      {{ displayedMonth | date: 'MMMM yyyy' }}  <!-- Display the formatted date -->
+    </ion-button>
+  </ion-item>
+ 
   <ion-grid *ngIf="hasTransactions; else noTransactionsTemplate">
     <ion-row>
-      <ion-col>Type</ion-col>
-      <ion-col>Amount</ion-col>
       <ion-col>Date</ion-col>
-      <ion-col>Category</ion-col>
+      <ion-col>Type</ion-col>
+      <ion-col>Payee</ion-col>
       <ion-col>Description</ion-col>
+      <ion-col>Category</ion-col>
+      <ion-col>Amount</ion-col>
     </ion-row>
     <ion-row *ngFor="let transaction of transactions | async">
+      <ion-col>{{ transaction.date.toDate() | date:'mediumDate' }}</ion-col>
       <ion-col>{{ transaction.type }}</ion-col>
-      <ion-col>{{ transaction.amount | currency }}</ion-col>
-      <ion-col>{{ transaction.date?.toDate() | date:'mediumDate' }}</ion-col>
-      <ion-col>{{ transaction.category }}</ion-col>
+      <ion-col>{{ transaction.payee }}</ion-col>
       <ion-col>{{ transaction.description }}</ion-col>
+      <ion-col>{{ transaction.category }}</ion-col>
+      <ion-col>{{ transaction.amount | currency }}</ion-col>
     </ion-row>
   </ion-grid>
 
   <ng-template #noTransactionsTemplate>
     <ion-item>
       <ion-label class="ion-text-center">
-        No transactions to display. Please add transactions.
+        No transactions to display.
       </ion-label>
     </ion-item>
   </ng-template>
 </ion-content>
+
+<!-- Modal for date-time selection -->
+<ion-modal [keepContentsMounted]="true" [isOpen]="showCalendar" (didDismiss)="cancelCalendar()">
+  <ng-template>
+    <ion-datetime
+      id="datetime"
+      presentation="month-year"
+     [showDefaultButtons]="true"
+      doneText="Confirm"
+      cancelText="Cancel"
+      [(ngModel)]="selectedDate"
+      (ionChange)="updateDate()"
+    ></ion-datetime>
+  </ng-template>
+</ion-modal>

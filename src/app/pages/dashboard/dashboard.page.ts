@@ -1,8 +1,9 @@
 import { Component, OnInit } from '@angular/core';
-import { Observable, combineLatest } from 'rxjs';
-import { map, tap } from 'rxjs/operators';
+import { Observable, combineLatest, Subscription } from 'rxjs';
+import { map } from 'rxjs/operators';
 import { TransactionService } from '../../services/transaction.service';
 import { AuthService } from '../../services/auth.service';
+import { DateSelectionService } from '../../services/date-selection.service';
 
 @Component({
   selector: 'app-dashboard',
@@ -13,44 +14,70 @@ export class DashboardPage implements OnInit {
   incomeTotal!: Observable<number>;
   expenseTotal!: Observable<number>;
   netTotal!: Observable<number>;
-  hasData = false;
+  hasData: boolean = false;
+  selectedDate: string = new Date().toISOString();  // This might be overridden by subscription
+  displayedMonth: Date = new Date(this.selectedDate);
+  showCalendar: boolean = false;  // State for calendar modal
+  private subscriptions = new Subscription();  // Manage subscriptions
 
   constructor(
     private transactionService: TransactionService,
-    private authService: AuthService
+    private authService: AuthService,
+    private dateSelectionService: DateSelectionService,
   ) {}
 
   ngOnInit() {
+    // Subscribe to the selected date from DateSelectionService
+    this.subscriptions.add(this.dateSelectionService.selectedDate$.subscribe(date => {
+      this.selectedDate = date;
+      this.displayedMonth = new Date(date);
+      this.loadTotals();  // Reload data whenever the selected date changes
+    }));
+
+    this.loadTotals();  // Initial load
+  }
+
+  loadTotals() {
     this.authService.currentUserId$.subscribe(userId => {
-      console.log('Dashboard User ID:', userId);
       if (userId) {
-        this.fetchTotals(userId);
+        this.fetchTotalsForCurrentMonth(userId, new Date(this.selectedDate));
+        this.hasData = true;  // Assuming data will load correctly
       } else {
         console.error('User ID not available, user might not be logged in');
         this.hasData = false;
       }
     });
   }
-  
-  fetchTotals(userId: string) {
-    this.incomeTotal = this.transactionService.getTotalByUserId('income', userId);
-    this.expenseTotal = this.transactionService.getTotalByUserId('expense', userId);
-  
+
+  fetchTotalsForCurrentMonth(userId: string, date: Date) {
+    this.incomeTotal = this.transactionService.getTotalByTypeAndDate('income', userId, date);
+    this.expenseTotal = this.transactionService.getTotalByTypeAndDate('expense', userId, date);
     this.netTotal = combineLatest([this.incomeTotal, this.expenseTotal]).pipe(
-      tap(([income, expense]) => console.log(`Income: ${income}, Expense: ${expense}`)),
-      map(([income, expense]) => {
-        const hasIncomeOrExpense = income > 0 || expense > 0;
-        this.hasData = hasIncomeOrExpense;
-        console.log(`Net Total Computed: ${income - expense}`);
-        return income - expense;
-      })
+      map(([income, expense]) => income - expense)
     );
-  
-    // Subscribe to netTotal to trigger the observables and log final value
-    this.netTotal.subscribe(net => {
-      console.log(`Net Total: ${net}`);
-    }, error => {
-      console.error('Error computing net total:', error);
-    });
+  }
+
+  handleDateChange(event: any) {
+    const newDate: string = event.detail.value;
+    this.selectedDate = newDate; // Update local state if needed
+    this.dateSelectionService.setSelectedDate(newDate); // Update shared state
+    this.displayedMonth = new Date(newDate); // Update displayed month
+    this.loadTotals(); // Reload totals based on new date
+  }
+
+  selectCurrentMonth() {
+    this.dateSelectionService.selectCurrentMonth();
+  }
+
+  openCalendar() {
+    this.showCalendar = true;
+  }
+
+  cancelCalendar() {
+    this.showCalendar = false;
+  }
+
+  ngOnDestroy() {
+    this.subscriptions.unsubscribe();  // Clean up subscriptions to prevent memory leaks
   }
 }
