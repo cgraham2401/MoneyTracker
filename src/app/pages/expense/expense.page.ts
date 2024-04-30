@@ -28,6 +28,9 @@ export class ExpensePage implements OnInit, OnDestroy {
   showCalendar: boolean = false;
   private subscriptions = new Subscription();
   hasTransactions: boolean = false;
+  submittedTransactions: Transaction[] = [];
+  upcomingRecurringTransactions: Transaction[] = [];
+  currentUserID: string | null = null;
 
   constructor(
     private authService: AuthService,
@@ -48,18 +51,62 @@ export class ExpensePage implements OnInit, OnDestroy {
 
   loadTransactions() {
     this.authService.currentUserId$.subscribe(userId => {
-      if (userId) {
-        this.transactions = this.transactionService.getTransactionsByTypeAndUserIdAndDate('expense', userId, new Date(this.selectedDate));
-        this.transactions.subscribe(list => {
-          this.hasTransactions = list && list.length > 0;
-        });
-      } else {
-        console.error('User ID not available, user might not be logged in');
-        this.transactions = of([]); 
-        this.hasTransactions = false;
-      }
+        if (userId) {
+            this.transactions = this.transactionService.getTransactionsByTypeAndUserIdAndDate('expense', userId, new Date(this.selectedDate));
+            this.transactions.subscribe(transactions => {
+                console.log('Transactions:', transactions); // Inserted line
+                this.hasTransactions = transactions.length > 0;
+
+                // Filter for submitted transactions
+                this.submittedTransactions = transactions.filter(t => t.isSubmitted);
+
+                // Filter for upcoming and overdue recurring transactions
+                this.upcomingRecurringTransactions = transactions.filter(t =>
+                    t.recurrence !== 'none' &&
+                    t.nextDueDate && // Ensure nextDueDate is defined
+                    (
+                        new Date(t.nextDueDate.toDate()).getTime() <= new Date().getTime() + 7 * 24 * 60 * 60 * 1000 // Upcoming or overdue within the next 7 days
+                    )
+                );
+            });
+        } else {
+            console.error('User ID not available, user might not be logged in');
+            this.transactions = of([]);
+            this.hasTransactions = false;
+            this.submittedTransactions = [];
+            this.upcomingRecurringTransactions = [];
+        }
     });
+}
+
+
+logTransactionIdAndResubmit(transactionId: string | undefined) {
+  this.authService.currentUserId$.subscribe(userId => {
+    if (userId) {
+      console.log('User attempting to resubmit:', userId);
+      console.log('Transaction ID:', transactionId);
+      this.resubmitTransaction(transactionId);
+    } else {
+      console.error('User ID not available, unable to resubmit transaction');
+    }
+  });
+}
+
+resubmitTransaction(transactionId: string | undefined) {
+  console.log('Trying to resubmit transaction with ID:', transactionId);
+  if (!transactionId) {
+    console.error('Transaction ID is undefined, cannot resubmit');
+    return;
   }
+
+  this.transactionService.updateTransactionSubmission(transactionId, true)
+    .then(() => {
+      console.log(`Transaction with ID ${transactionId} was resubmitted successfully.`);
+    })
+    .catch(error => {
+      console.error(`Failed to resubmit transaction with ID ${transactionId}:`, error);
+    });
+}
 
   fetchCategories() {
     this.firestore.collection<Category>('categories', ref => ref.where('type', '==', 'expense'))
@@ -78,21 +125,28 @@ export class ExpensePage implements OnInit, OnDestroy {
 
   addTransaction(formValues: any) {
     const transaction: Transaction = {
-      amount: formValues.amount,
-      type: 'expense',
-      date: Timestamp.fromDate(new Date(formValues.date)),
-      category: formValues.category,
-      description: formValues.description || '',
-      payee: formValues.payee,
+        amount: formValues.amount,
+        type: 'expense',
+        date: Timestamp.fromDate(new Date(formValues.date)), // Original transaction date
+        category: formValues.category,
+        description: formValues.description || '',
+        payee: formValues.payee,
+        recurrence: formValues.recurrence, // Capturing the recurrence from the form
+        nextDueDate: formValues.recurrence !== 'none' && formValues.nextDueDate 
+                     ? Timestamp.fromDate(new Date(formValues.nextDueDate)) 
+                     : Timestamp.now(), // Use current timestamp if nextDueDate is not provided
+        isSubmitted: true, // Assuming the transaction is submitted when added
+        isOverdue: false // Defaulting to false upon creation
     };
-    console.log('Attempting to add expense transaction:', transaction);
+
+    console.log('Attempting to add income transaction:', transaction);
     this.transactionService.addTransaction(transaction).then(() => {
-      console.log('Expense Transaction added successfully!');
-      this.showAddForm = false; // Hide the form upon successful addition
+        console.log('Income Transaction added successfully!');
+        this.showAddForm = false; // Hide the form upon successful addition
     }).catch((error: any) => {
-      console.error('Error adding expense transaction:', error);
+        console.error('Error adding income transaction:', error);
     });
-  }
+}
 
   selectCurrentMonth() {
     this.dateSelectionService.selectCurrentMonth();

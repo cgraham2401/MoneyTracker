@@ -1,6 +1,7 @@
 import { Timestamp } from 'firebase/firestore';
 
 export interface Transaction {
+    id?: string;
     amount: number;
     type: 'income' | 'expense';
     payee: string;
@@ -9,4 +10,6 @@ export interface Transaction {
     description?: string;
     recurrence?: 'none' | 'weekly' | 'biweekly' | 'monthly';
     nextDueDate?: Timestamp;
+    isSubmitted?: boolean;
+    isOverdue?: boolean;
 }

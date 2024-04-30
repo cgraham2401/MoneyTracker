@@ -16,7 +16,13 @@
     </ion-button>
   </ion-item>
 
-  <ion-grid *ngIf="hasTransactions; else noTransactionsTemplate">
+  <!-- Table for Submitted Transactions -->
+  <ion-grid *ngIf="submittedTransactions.length > 0; else noTransactionsTemplate">
+    <ion-row>
+      <ion-col colspan="5">
+        <h2>Transactions</h2>
+      </ion-col>
+    </ion-row>
     <ion-row>
       <ion-col>Date</ion-col>
       <ion-col>Payee</ion-col>
@@ -24,7 +30,7 @@
       <ion-col>Category</ion-col>
       <ion-col>Amount</ion-col>
     </ion-row>
-    <ion-row *ngFor="let transaction of transactions | async">
+    <ion-row *ngFor="let transaction of submittedTransactions">
       <ion-col>{{ transaction.date.toDate() | date:'mediumDate' }}</ion-col>
       <ion-col>{{ transaction.payee }}</ion-col>
       <ion-col>{{ transaction.description }}</ion-col>
@@ -33,11 +39,37 @@
     </ion-row>
   </ion-grid>
 
+  <!-- Table for Upcoming Recurring Transactions -->
+  <ion-grid *ngIf="upcomingRecurringTransactions.length > 0">
+    <ion-row>
+      <ion-col colspan="5">
+        <h2>Reoccurring Transactions</h2>
+      </ion-col>
+    </ion-row>
+    <ion-row>
+      <ion-col>Next Due Date</ion-col>
+      <ion-col>Payee</ion-col>
+      <ion-col>Description</ion-col>
+      <ion-col>Category</ion-col>
+      <ion-col>Amount</ion-col>
+      <ion-col>Action</ion-col>
+    </ion-row>
+    <ion-row *ngFor="let transaction of upcomingRecurringTransactions">
+      <ion-col>{{ transaction.nextDueDate?.toDate() | date:'mediumDate' }}</ion-col>
+      <ion-col>{{ transaction.payee }}</ion-col>
+      <ion-col>{{ transaction.description }}</ion-col>
+      <ion-col>{{ transaction.category }}</ion-col>
+      <ion-col>{{ transaction.amount | currency }}</ion-col>
+      <ion-col>
+        <ion-button (click)="logTransactionIdAndResubmit(transaction.id)">Resubmit</ion-button>
+
+      </ion-col>
+    </ion-row>
+  </ion-grid>
+
   <ng-template #noTransactionsTemplate>
     <ion-item>
-      <ion-label class="ion-text-center">
-        No transactions to display.
-      </ion-label>
+      <ion-label class="ion-text-center">No transactions to display.</ion-label>
     </ion-item>
   </ng-template>
 
@@ -77,7 +109,24 @@
       <ion-item>
         <ion-label position="floating">Payee</ion-label>
         <ion-input type="text" name="payee" ngModel required></ion-input>
-      </ion-item>      
+      </ion-item>
+      <!-- Recurrence Selection -->
+<ion-item>
+  <ion-label>Recurrence</ion-label>
+  <ion-select placeholder="Select One" name="recurrence" ngModel>
+    <ion-select-option value="none">None</ion-select-option>
+    <ion-select-option value="weekly">Weekly</ion-select-option>
+    <ion-select-option value="biweekly">Bi-Weekly</ion-select-option>
+    <ion-select-option value="monthly">Monthly</ion-select-option>
+  </ion-select>
+</ion-item>
+
+<!-- Next Due Date Selection -->
+<ion-item>
+  <ion-label>Next Due Date</ion-label>
+  <ion-datetime display-format="MMM DD, YYYY" picker-format="MMM DD YYYY" name="nextDueDate" ngModel></ion-datetime>
+</ion-item>
+      
       <ion-button type="submit" expand="block">Submit</ion-button>
     </form>
     <!-- Optionally add a cancel button to hide form -->
