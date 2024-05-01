@@ -108,6 +108,25 @@ resubmitTransaction(transactionId: string | undefined) {
     });
 }
 
+deleteTransaction(transactionId: string | undefined) {
+  if (!transactionId) {
+    console.error('Transaction ID is undefined, cannot delete');
+    return;
+  }
+
+  // Add a confirmation dialog
+  if (confirm('Are you sure you want to delete this transaction?')) {
+    this.transactionService.deleteTransaction(transactionId).then(() => {
+      console.log(`Transaction with ID ${transactionId} was deleted successfully.`);
+      // Optionally refresh the list or handle the UI update
+    }).catch(error => {
+      console.error(`Failed to delete transaction with ID ${transactionId}:`, error);
+    });
+  } else {
+    console.log('Transaction deletion cancelled.');
+  }
+}
+
   fetchCategories() {
     this.firestore.collection<Category>('categories', ref => ref.where('type', '==', 'expense'))
       .valueChanges({ idField: 'id' }) // Corrected method name

@@ -29,6 +29,7 @@
       <ion-col>Description</ion-col>
       <ion-col>Category</ion-col>
       <ion-col>Amount</ion-col>
+      <ion-col>Action</ion-col>
     </ion-row>
     <ion-row *ngFor="let transaction of submittedTransactions">
       <ion-col>{{ transaction.date.toDate() | date:'mediumDate' }}</ion-col>
@@ -36,6 +37,9 @@
       <ion-col>{{ transaction.description }}</ion-col>
       <ion-col>{{ transaction.category }}</ion-col>
       <ion-col>{{ transaction.amount | currency }}</ion-col>
+      <ion-col>
+        <ion-button (click)="deleteTransaction(transaction.id)" color="danger">Delete</ion-button>
+      </ion-col>
     </ion-row>
   </ion-grid>
 
@@ -61,8 +65,8 @@
       <ion-col>{{ transaction.category }}</ion-col>
       <ion-col>{{ transaction.amount | currency }}</ion-col>
       <ion-col>
-        <ion-button (click)="logTransactionIdAndResubmit(transaction.id)">Resubmit</ion-button>
-
+        <ion-button (click)="logTransactionIdAndResubmit(transaction.id)">Submit</ion-button>
+        <ion-button (click)="deleteTransaction(transaction.id)" color="danger">Delete</ion-button>
       </ion-col>
     </ion-row>
   </ion-grid>

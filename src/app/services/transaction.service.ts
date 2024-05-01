@@ -204,6 +204,22 @@ calculateNextDueDate(transaction: Transaction): Date | null {
   return newDueDate;
 }
 
+deleteTransaction(transactionId: string): Promise<void> {
+  return this.afAuth.authState.pipe(
+    take(1),
+    switchMap(user => {
+      if (!user) throw new Error('No authenticated user available');
+      return this.firestore.collection(`users/${user.uid}/transactions`).doc(transactionId).delete();
+    }),
+    tap(() => console.log('Transaction deleted successfully')),
+    catchError(error => {
+      console.error('Error deleting transaction:', error);
+      throw error;
+    })
+  ).toPromise();
+}
+
+
 getRecurringTotalsByTypeAndDateRange(type: string, userId: string, startDate: Date, endDate: Date): Observable<number> {
   const startTimestamp = Timestamp.fromDate(startDate);
   const endTimestamp = Timestamp.fromDate(endDate);
