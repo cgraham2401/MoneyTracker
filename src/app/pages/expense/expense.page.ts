@@ -30,7 +30,7 @@ export class ExpensePage implements OnInit, OnDestroy {
   hasTransactions: boolean = false;
   submittedTransactions: Transaction[] = [];
   upcomingRecurringTransactions: Transaction[] = [];
-  currentUserID: string | null = null;
+
 
   constructor(
     private authService: AuthService,
@@ -76,7 +76,7 @@ loadUpcomingRecurringTransactions(userId: string) {
   const selectedDate = new Date(this.selectedDate);  // Assumes this.selectedDate is already set to the desired month/year
   const startDate = new Date(selectedDate.getFullYear(), selectedDate.getMonth(), 1);
   const endOfMonth = new Date(selectedDate.getFullYear(), selectedDate.getMonth() + 1, 0);
-  
+
   const currentDate = new Date();
   const sevenDaysLater = new Date(currentDate.getTime() + 7 * 24 * 60 * 60 * 1000);
   const isCurrentMonth = currentDate.getMonth() === selectedDate.getMonth() && currentDate.getFullYear() === selectedDate.getFullYear();
@@ -88,9 +88,9 @@ loadUpcomingRecurringTransactions(userId: string) {
 
   // Pass the additional parameters required by the service function
   this.transactionService.getRecurringTransactionsByTypeAndUserIdAndDate(
-    'expense', 
-    userId, 
-    startDate, 
+    'expense',
+    userId,
+    startDate,
     endOfMonth,  // Assumes that you want transactions up to the end of the selected month
     sevenDaysLater, // The date seven days from now, used for filtering within the next week
     isCurrentMonth  // Boolean indicating whether the selected month is the current month
@@ -179,8 +179,8 @@ deleteTransaction(transactionId: string | undefined) {
         description: formValues.description || '',
         payee: formValues.payee,
         recurrence: formValues.recurrence, // Capturing the recurrence from the form
-        nextDueDate: formValues.recurrence !== 'none' && formValues.nextDueDate 
-                     ? Timestamp.fromDate(new Date(formValues.nextDueDate)) 
+        nextDueDate: formValues.recurrence !== 'none' && formValues.nextDueDate
+                     ? Timestamp.fromDate(new Date(formValues.nextDueDate))
                      : Timestamp.now(), // Use current timestamp if nextDueDate is not provided
         isSubmitted: true, // Assuming the transaction is submitted when added
         isOverdue: false // Defaulting to false upon creation

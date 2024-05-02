@@ -3,7 +3,7 @@ import { AngularFirestore } from '@angular/fire/compat/firestore';
 import { AngularFireAuth } from '@angular/fire/compat/auth';
 import { Observable } from 'rxjs';
 import { catchError, defaultIfEmpty } from 'rxjs/operators';
-import { map, startWith, switchMap, take, tap } from 'rxjs/operators';
+import { map, switchMap, take, tap } from 'rxjs/operators';
 import { Transaction } from '../models/transaction.model';
 import { Timestamp } from 'firebase/firestore';
 
@@ -17,15 +17,7 @@ export class TransactionService {
     private afAuth: AngularFireAuth
   ) {}
 
-  // Gets the total of transactions by type for a specific user
-  getTotalByUserId(type: string, userId: string): Observable<number> {
-    return this.firestore.collection<Transaction>(`users/${userId}/transactions`, ref => ref.where('type', '==', type))
-      .valueChanges()
-      .pipe(
-        map(transactions => transactions.reduce((acc, transaction) => acc + transaction.amount, 0)),
-        startWith(0)
-      );
-  }
+
 
   getTotalByTypeAndDate(type: string, userId: string, date: Date): Observable<number> {
     const startOfMonth = new Date(Date.UTC(date.getFullYear(), date.getMonth(), 1));
@@ -66,7 +58,7 @@ getTransactionsUpToDate(userId: string, endDate: Date): Observable<Transaction[]
     const endOfMonth = new Date(date.getFullYear(), date.getMonth() + 1, 0, 23, 59, 59);
     const startTimestamp = Timestamp.fromDate(startOfMonth);
     const endTimestamp = Timestamp.fromDate(endOfMonth);
-  
+
     return this.firestore.collection<Transaction>(`users/${userId}/transactions`, ref =>
         ref.where('date', '>=', startTimestamp)
            .where('date', '<=', endTimestamp)
@@ -80,7 +72,7 @@ getTransactionsUpToDate(userId: string, endDate: Date): Observable<Transaction[]
   }
 
   getRecurringTransactionsByUserIdAndDate(userId: string, startDate: Date, endDate: Date): Observable<Transaction[]> {
-    return this.firestore.collection<Transaction>(`users/${userId}/transactions`, ref => 
+    return this.firestore.collection<Transaction>(`users/${userId}/transactions`, ref =>
         ref.where('recurrence', '!=', 'none')
            .where('nextDueDate', '>=', Timestamp.fromDate(startDate))
            .where('nextDueDate', '<=', Timestamp.fromDate(endDate))
@@ -118,27 +110,15 @@ getTransactionsUpToDate(userId: string, endDate: Date): Observable<Transaction[]
     });
   }
 
-  // Fetches all transactions of a specific type for a user
-  getTransactionsByUserId(userId: string): Observable<Transaction[]> {
-    return this.firestore.collection<Transaction>(`users/${userId}/transactions`, ref => ref.orderBy('date', 'desc'))
-      .valueChanges({ idField: 'id' })
-      .pipe(
-        tap(transactions => console.log("All transactions for user:", userId, transactions))
-      );
-  }
     // Fetches transactions by type
-    getTransactionsByTypeAndUserId(type: string, userId: string): Observable<Transaction[]> {
-      return this.firestore.collection<Transaction>(`users/${userId}/transactions`, 
-        ref => ref.where('type', '==', type).orderBy('date', 'desc'))
-        .valueChanges();
-    }
+
 
     getTransactionsByTypeAndUserIdAndDate(type: string, userId: string, date: Date): Observable<Transaction[]> {
       const startOfMonth = new Date(date.getFullYear(), date.getMonth(), 1);
       const endOfMonth = new Date(date.getFullYear(), date.getMonth() + 1, 0, 23, 59, 59);
       const startTimestamp = Timestamp.fromDate(startOfMonth);
       const endTimestamp = Timestamp.fromDate(endOfMonth);
-    
+
       return this.firestore.collection<Transaction>(`users/${userId}/transactions`, ref =>
           ref.where('type', '==', type)
              .where('date', '>=', startTimestamp)
@@ -151,7 +131,7 @@ getTransactionsUpToDate(userId: string, endDate: Date): Observable<Transaction[]
           return { id, ...data };
         })));
     }
-    
+
     getRecurringTransactionsByTypeAndUserIdAndDate(type: string, userId: string, startDate: Date, endOfMonth: Date, sevenDaysLater: Date, currentMonth: boolean): Observable<Transaction[]> {
     const endDate = currentMonth ? sevenDaysLater : endOfMonth; // Use sevenDaysLater only if currentMonth is true
 
@@ -166,7 +146,7 @@ getTransactionsUpToDate(userId: string, endDate: Date): Observable<Transaction[]
             const id = a.payload.doc.id;
             return { id, ...data };
         })),
-        map(transactions => transactions.filter(t => 
+        map(transactions => transactions.filter(t =>
             t.nextDueDate && // Ensure nextDueDate exists
             new Date(t.nextDueDate.toDate()).getTime() >= startDate.getTime() &&
             new Date(t.nextDueDate.toDate()).getTime() <= endDate.getTime()))
@@ -176,11 +156,11 @@ getTransactionsUpToDate(userId: string, endDate: Date): Observable<Transaction[]
 
 
 
-  
-  
+
+
     updateTransactionSubmission(transactionId: string, isSubmitted: boolean): Promise<void> {
       let userId: string;
-    
+
       return this.afAuth.authState.pipe(
         take(1),
         switchMap(user => {
@@ -194,7 +174,7 @@ getTransactionsUpToDate(userId: string, endDate: Date): Observable<Transaction[]
           if (!docSnapshot || !docSnapshot.exists) {
             throw new Error(`No transaction found with ID ${transactionId}`);
           }
-    
+
           const originalTransaction = docSnapshot.data() as Transaction;
           if (originalTransaction.isSubmitted && isSubmitted) {
             console.log('Transaction is already submitted.');
@@ -213,9 +193,9 @@ getTransactionsUpToDate(userId: string, endDate: Date): Observable<Transaction[]
                     return this.firestore.collection(`users/${userId}/transactions`).doc(transactionId).update({ recurrence: 'none' });
                 });
         }
-        
-        
-    
+
+
+
           const updateData: any = { isSubmitted };
           if (!originalTransaction.isSubmitted) {
             const newDueDate = this.calculateNextDueDate(originalTransaction);
@@ -224,7 +204,7 @@ getTransactionsUpToDate(userId: string, endDate: Date): Observable<Transaction[]
             }
             updateData.nextDueDate = Timestamp.fromDate(newDueDate); // Set nextDueDate to the calculated value
           }
-    
+
           return this.firestore.collection(`users/${userId}/transactions`).doc(transactionId).update(updateData);
         }),
         tap(() => console.log('Transaction updated successfully')),
@@ -234,8 +214,8 @@ getTransactionsUpToDate(userId: string, endDate: Date): Observable<Transaction[]
         })
       ).toPromise();
     }
-    
-    
+
+
 
 // Helper method to calculate the next due date based on the recurrence type
 calculateNextDueDate(transaction: Transaction): Date | null {
@@ -278,9 +258,9 @@ getRecurringTotalsByTypeAndDateRange(type: string, userId: string, startDate: Da
   const startTimestamp = Timestamp.fromDate(startDate);
   const endTimestamp = Timestamp.fromDate(endDate);
 
-  return this.firestore.collection<Transaction>(`users/${userId}/transactions`, ref => 
+  return this.firestore.collection<Transaction>(`users/${userId}/transactions`, ref =>
     ref.where('type', '==', type)
-       .where('recurrence', '!=', 'none')  
+       .where('recurrence', '!=', 'none')
        .where('nextDueDate', '>=', startTimestamp)
        .where('nextDueDate', '<=', endTimestamp)
   )
@@ -289,5 +269,5 @@ getRecurringTotalsByTypeAndDateRange(type: string, userId: string, startDate: Da
     map(transactions => transactions.reduce((acc, transaction) => acc + transaction.amount, 0))
   );
 }
-    
+
 }

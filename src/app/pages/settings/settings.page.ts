@@ -15,7 +15,9 @@ export class SettingsPage implements OnInit {
   ngOnInit() {
     this.settingsService.darkModeEnabled$.subscribe(enabled => {
       this.darkModeEnabled = enabled;
+      this.updateDarkModeClass(enabled);
     });
+
     this.settingsService.cumulativeViewEnabled$.subscribe(enabled => {
       this.cumulativeViewEnabled = enabled;
     });
@@ -23,7 +25,13 @@ export class SettingsPage implements OnInit {
 
   toggleDarkMode(event: any) {
     const newState = event.detail.checked;
-    this.settingsService.setDarkModeEnabled(newState);
+    this.settingsService.setDarkModeEnabled(newState).then(() => {
+      this.updateDarkModeClass(newState);
+    });
+  }
+
+  private updateDarkModeClass(enable: boolean) {
+    document.body.classList.toggle('ion-palette-dark', enable);
   }
 
   toggleCumulativeView(event: any) {

@@ -1,18 +1,5 @@
-/*
- * App Global CSS
- * ----------------------------------------------------------------------------
- * Put style rules here that you want to apply globally. These styles are for
- * the entire app and not just one component. Additionally, this file can be
- * used as an entry point to import other CSS/Sass files to be included in the
- * output CSS.
- * For more information on global stylesheets, visit the documentation:
- * https://ionicframework.com/docs/layout/global-stylesheets
- */
-
 /* Core CSS required for Ionic components to work properly */
 @import "@ionic/angular/css/core.css";
-
-/* Basic CSS for apps built with Ionic */
 @import "@ionic/angular/css/normalize.css";
 @import "@ionic/angular/css/structure.css";
 @import "@ionic/angular/css/typography.css";
@@ -24,3 +11,81 @@
 @import "@ionic/angular/css/text-alignment.css";
 @import "@ionic/angular/css/text-transformation.css";
 @import "@ionic/angular/css/flex-utils.css";
+
+// Uncomment to include Ionic's default dark themes styles if needed
+//@import '@ionic/angular/css/palettes/dark.class.css';
+
+/* Prevents flashing when toggling themes */
+ion-item {
+  --transition: none;
+}
+
+/* Define your color palette */
+$colors: (
+  primary: #4d8dff,
+  secondary: #46b1ff,
+  tertiary: #8482fb,
+  success: #2dd55b,
+  warning: #ffce31,
+  danger: #f24c58,
+  light: #222428,
+  medium: #989aa2,
+  dark: #f4f5f8
+);
+
+/* Applies base and dark theme styles */
+@mixin apply-palette($colors) {
+  @each $name, $color in $colors {
+    --ion-color-#{$name}: #{$color};
+    --ion-color-#{$name}-contrast: #000;
+    --ion-color-#{$name}-shade: get-color-shade($color);
+    --ion-color-#{$name}-tint: get-color-tint($color);
+  }
+}
+
+/* Dark Theme Styles */
+.ion-palette-dark {
+  @include apply-palette($colors);
+
+  --ion-background-color: #121212;
+  --ion-text-color: #ffffff;
+
+  --ion-item-background-color: #1e2023;
+  --ion-toolbar-background: #2c2c2d;
+  --ion-tab-bar-background: #2c2c2d;
+  --ion-content-background: #121212;
+  
+  ion-menu {
+    --background: #1f1f1f;  // Specific styles for the menu in dark mode
+  }
+
+
+  ion-header {
+    --background: var(--ion-toolbar-background);
+  }
+
+  ion-list {
+    --background: var(--ion-toolbar-background);
+  }
+  
+ 
+  
+  
+  
+ 
+
+
+
+}
+.ion-palette-dark ion-item {
+    --background: var(--ion-item-background-color, #1e2023);
+    --color: var(--ion-text-color);
+}
+.ion-palette-dark ion-content {
+    --background: var(--ion-background-color);
+}
+/* Applying the dark theme mixins where required */
+:root {
+  @include apply-palette($colors);
+
+}

@@ -19,7 +19,9 @@ export class SettingsService {
   }
 
   private async loadInitialSettings() {
-    const darkModeEnabled = await this.storage.get('darkModeEnabled') ?? false;
+    const prefersDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
+    const storedDarkModeSetting = await this.storage.get('darkModeEnabled');
+    const darkModeEnabled = storedDarkModeSetting !== null ? storedDarkModeSetting : prefersDark;
     this._darkModeEnabled$.next(darkModeEnabled);
     const cumulativeViewEnabled = await this.storage.get('cumulativeViewEnabled') ?? false;
     this._cumulativeViewEnabled$.next(cumulativeViewEnabled);

@@ -24,11 +24,6 @@ const routes: Routes = [
     canActivate: [canActivateAuth]
   },
   {
-    path: 'add-transaction',
-    loadChildren: () => import('./pages/add-transaction/add-transaction.module').then( m => m.AddTransactionPageModule),
-    canActivate: [canActivateAuth]
-  },
-  {
     path: 'settings',
     loadChildren: () => import('./pages/settings/settings.module').then( m => m.SettingsPageModule),
     canActivate: [canActivateAuth]

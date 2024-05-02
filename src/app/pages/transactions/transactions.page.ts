@@ -24,15 +24,15 @@ export class TransactionsPage implements OnInit, OnDestroy {
   hasTransactions: boolean = false;
   showCalendar: boolean = false; // State for calendar modal
   selectedDate: string = new Date().toISOString();
-  displayedMonth: Date = new Date(this.selectedDate); 
+  displayedMonth: Date = new Date(this.selectedDate);
   private subscriptions: Subscription = new Subscription();
   submittedTransactions: Transaction[] = [];
   upcomingRecurringTransactions: Transaction[] = [];
   currentUserID: string | null = null;
-  showAddForm: boolean = false; 
+  showAddForm: boolean = false;
   categories: Category[] = [];
   private destroy$: Subject<void> = new Subject<void>();
-  
+
   constructor(
     private authService: AuthService,
     private transactionService: TransactionService,
@@ -137,8 +137,8 @@ loadUpcomingRecurringTransactions(userId: string) {
         description: formValues.description || '',
         payee: formValues.payee,
         recurrence: formValues.recurrence, // Capturing the recurrence from the form
-        nextDueDate: formValues.recurrence !== 'none' && formValues.nextDueDate 
-                     ? Timestamp.fromDate(new Date(formValues.nextDueDate)) 
+        nextDueDate: formValues.recurrence !== 'none' && formValues.nextDueDate
+                     ? Timestamp.fromDate(new Date(formValues.nextDueDate))
                      : Timestamp.now(), // Use current timestamp if nextDueDate is not provided
         isSubmitted: true, // Assuming the transaction is submitted when added
         isOverdue: false // Defaulting to false upon creation
@@ -159,7 +159,7 @@ loadUpcomingRecurringTransactions(userId: string) {
       console.error('Transaction ID is undefined, cannot resubmit');
       return;
     }
-  
+
     this.transactionService.updateTransactionSubmission(transactionId, true)
       .then(() => {
         console.log(`Transaction with ID ${transactionId} was resubmitted successfully.`);
@@ -174,7 +174,7 @@ loadUpcomingRecurringTransactions(userId: string) {
       console.error('Transaction ID is undefined, cannot delete');
       return;
     }
-  
+
     // Add a confirmation dialog
     if (confirm('Are you sure you want to delete this transaction?')) {
       this.transactionService.deleteTransaction(transactionId).then(() => {
@@ -187,17 +187,17 @@ loadUpcomingRecurringTransactions(userId: string) {
       console.log('Transaction deletion cancelled.');
     }
   }
-  
+
 
   selectCurrentMonth() {
     this.dateSelectionService.selectCurrentMonth();
     this.updateDate();
   }
 
-  selectLastThreeMonths() {
-    this.dateSelectionService.selectLastThreeMonths();
-    this.updateDate();
-  }
+  // selectLastThreeMonths() {
+  //   this.dateSelectionService.selectLastThreeMonths();
+  //   this.updateDate();
+  // }
 
   openCalendar() {
     this.showCalendar = true;

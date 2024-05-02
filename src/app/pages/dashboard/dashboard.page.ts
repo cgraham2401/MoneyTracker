@@ -1,4 +1,4 @@
-import { Component, OnInit, ChangeDetectorRef  } from '@angular/core';
+import { Component, OnInit, ChangeDetectorRef, OnDestroy  } from '@angular/core';
 import { Observable, combineLatest, Subscription } from 'rxjs';
 import { map } from 'rxjs/operators';
 import { TransactionService } from '../../services/transaction.service';
@@ -13,7 +13,7 @@ import { SettingsService } from '../../services/settings.service';
   styleUrls: ['./dashboard.page.scss'],
   providers: [DatePipe]
 })
-export class DashboardPage implements OnInit {
+export class DashboardPage implements OnInit, OnDestroy {
   incomeTotal!: Observable<number>;
   expenseTotal!: Observable<number>;
   netTotal!: Observable<number>;
@@ -31,6 +31,7 @@ export class DashboardPage implements OnInit {
   cumulativeBalance: number = 0;
   toggleCumulative: boolean = false;
   currentUserID: string | null = null;
+
 
   constructor(
     private transactionService: TransactionService,
@@ -109,8 +110,8 @@ export class DashboardPage implements OnInit {
   }
 
   fetchProjectedTotalsForCurrentMonth(userId: string, date: Date) {
-    let startOfMonth = new Date(date.getFullYear(), date.getMonth(), 1);
-    let endOfMonth = new Date(date.getFullYear(), date.getMonth() + 1, 0);
+    const startOfMonth = new Date(date.getFullYear(), date.getMonth(), 1);
+    const endOfMonth = new Date(date.getFullYear(), date.getMonth() + 1, 0);
     this.pendingRecurringIncome = this.transactionService.getRecurringTotalsByTypeAndDateRange('income', userId, startOfMonth, endOfMonth);
     this.pendingRecurringExpense = this.transactionService.getRecurringTotalsByTypeAndDateRange('expense', userId, startOfMonth, endOfMonth);
     this.projectedIncome = combineLatest([this.incomeTotal, this.pendingRecurringIncome]).pipe(

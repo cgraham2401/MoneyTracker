@@ -19,9 +19,9 @@ export class DateSelectionService {
     this.setSelectedDate(new Date(currentDate.getFullYear(), currentDate.getMonth(), 1).toISOString());
   }
 
-  selectLastThreeMonths() {
-    const currentDate = new Date();
-    const threeMonthsAgo = new Date(currentDate.getFullYear(), currentDate.getMonth() - 2, 1);
-    this.setSelectedDate(threeMonthsAgo.toISOString());
-  }
+  // selectLastThreeMonths() {
+  //   const currentDate = new Date();
+  //   const threeMonthsAgo = new Date(currentDate.getFullYear(), currentDate.getMonth() - 2, 1);
+  //   this.setSelectedDate(threeMonthsAgo.toISOString());
+  // }
 }
