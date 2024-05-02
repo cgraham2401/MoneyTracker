@@ -1,61 +1,106 @@
-import { Component, OnInit } from '@angular/core';
+import { Component, OnInit, ChangeDetectorRef  } from '@angular/core';
 import { Observable, combineLatest, Subscription } from 'rxjs';
 import { map } from 'rxjs/operators';
 import { TransactionService } from '../../services/transaction.service';
 import { AuthService } from '../../services/auth.service';
 import { DateSelectionService } from '../../services/date-selection.service';
+import { DatePipe } from '@angular/common';
+import { SettingsService } from '../../services/settings.service';
 
 @Component({
   selector: 'app-dashboard',
   templateUrl: './dashboard.page.html',
   styleUrls: ['./dashboard.page.scss'],
+  providers: [DatePipe]
 })
 export class DashboardPage implements OnInit {
   incomeTotal!: Observable<number>;
   expenseTotal!: Observable<number>;
   netTotal!: Observable<number>;
   hasData: boolean = false;
-  selectedDate: string = new Date().toISOString();  // This might be overridden by subscription
+  selectedDate: string = new Date().toISOString();
   displayedMonth: Date = new Date(this.selectedDate);
-  showCalendar: boolean = false;  // State for calendar modal
-  private subscriptions = new Subscription();  // Manage subscriptions
+  isCurrentMonth: boolean = true;
+  showCalendar: boolean = false;
+  private subscriptions = new Subscription();
   projectedIncome!: Observable<number>;
   projectedExpense!: Observable<number>;
   projectedNetTotal!: Observable<number>;
   pendingRecurringIncome!: Observable<number>;
   pendingRecurringExpense!: Observable<number>;
+  cumulativeBalance: number = 0;
+  toggleCumulative: boolean = false;
+  currentUserID: string | null = null;
 
   constructor(
     private transactionService: TransactionService,
     private authService: AuthService,
     private dateSelectionService: DateSelectionService,
+    private datePipe: DatePipe,
+    private settingsService: SettingsService,
+    private changeDetectorRef: ChangeDetectorRef,
   ) {}
 
   ngOnInit() {
-    // Subscribe to the selected date from DateSelectionService
+    this.authService.currentUserId$.subscribe(userId => {
+      this.currentUserID = userId;
+      this.loadInitialData();
+    });
+
+    this.subscriptions.add(this.settingsService.cumulativeViewEnabled$.subscribe(toggle => {
+      this.toggleCumulative = toggle;
+      this.loadInitialData();
+    }));
+
     this.subscriptions.add(this.dateSelectionService.selectedDate$.subscribe(date => {
       this.selectedDate = date;
       this.displayedMonth = new Date(date);
-      this.loadTotals();  // Reload data whenever the selected date changes
+      this.isCurrentMonth = this.checkIfCurrentMonth(date);
+      this.loadInitialData();
     }));
-
-    this.loadTotals();  // Initial load
   }
+
+  loadInitialData() {
+    if (this.currentUserID) {
+        this.loadTotals();
+        if (this.toggleCumulative) {
+            this.loadCumulativeBalance(this.currentUserID, new Date(this.selectedDate));
+        }
+    } else {
+        console.error('User ID not available');
+        this.hasData = false;
+    }
+}
+
+
+  checkIfCurrentMonth(date: string): boolean {
+    const currentDate = this.datePipe.transform(new Date(), 'MM-yyyy');
+    const selectedMonth = this.datePipe.transform(new Date(date), 'MM-yyyy');
+    return currentDate === selectedMonth;
+  }
+
+  loadCumulativeBalance(userId: string, date: Date) {
+    this.transactionService.getTransactionsUpToDate(userId, date)
+      .subscribe(transactions => {
+        this.cumulativeBalance = transactions.reduce((acc, cur) => cur.type === 'income' ? acc + cur.amount : acc - cur.amount, 0);
+        this.hasData = true;
+        this.changeDetectorRef.detectChanges(); // Force update of the view
+      });
+}
 
   loadTotals() {
-    this.authService.currentUserId$.subscribe(userId => {
-      if (userId) {
-        this.fetchTotalsForCurrentMonth(userId, new Date(this.selectedDate));
-        this.fetchProjectedTotalsForCurrentMonth(userId, new Date(this.selectedDate));
-        this.hasData = true;  // Assuming data will load correctly
-      } else {
-        console.error('User ID not available, user might not be logged in');
-        this.hasData = false;
+    if (this.currentUserID) {
+      this.fetchTotalsForMonth(this.currentUserID, new Date(this.selectedDate));
+      if (this.isCurrentMonth) {
+        this.fetchProjectedTotalsForCurrentMonth(this.currentUserID, new Date(this.selectedDate));
       }
-    });
+      this.hasData = true;
+    } else {
+      this.hasData = false;
+    }
   }
 
-  fetchTotalsForCurrentMonth(userId: string, date: Date) {
+  fetchTotalsForMonth(userId: string, date: Date) {
     this.incomeTotal = this.transactionService.getTotalByTypeAndDate('income', userId, date);
     this.expenseTotal = this.transactionService.getTotalByTypeAndDate('expense', userId, date);
     this.netTotal = combineLatest([this.incomeTotal, this.expenseTotal]).pipe(
@@ -66,37 +111,26 @@ export class DashboardPage implements OnInit {
   fetchProjectedTotalsForCurrentMonth(userId: string, date: Date) {
     let startOfMonth = new Date(date.getFullYear(), date.getMonth(), 1);
     let endOfMonth = new Date(date.getFullYear(), date.getMonth() + 1, 0);
-  
-    // Fetch recurring totals
-    let recurringIncome = this.transactionService.getRecurringTotalsByTypeAndDateRange('income', userId, startOfMonth, endOfMonth);
-    let recurringExpense = this.transactionService.getRecurringTotalsByTypeAndDateRange('expense', userId, startOfMonth, endOfMonth);
-  
-    // Combine recurring totals with current totals for a projected view
-    this.projectedIncome = combineLatest([this.incomeTotal, recurringIncome]).pipe(
+    this.pendingRecurringIncome = this.transactionService.getRecurringTotalsByTypeAndDateRange('income', userId, startOfMonth, endOfMonth);
+    this.pendingRecurringExpense = this.transactionService.getRecurringTotalsByTypeAndDateRange('expense', userId, startOfMonth, endOfMonth);
+    this.projectedIncome = combineLatest([this.incomeTotal, this.pendingRecurringIncome]).pipe(
       map(([currentIncome, additionalIncome]) => currentIncome + additionalIncome)
     );
-  
-    this.projectedExpense = combineLatest([this.expenseTotal, recurringExpense]).pipe(
+    this.projectedExpense = combineLatest([this.expenseTotal, this.pendingRecurringExpense]).pipe(
       map(([currentExpense, additionalExpense]) => currentExpense + additionalExpense)
     );
-  
     this.projectedNetTotal = combineLatest([this.projectedIncome, this.projectedExpense]).pipe(
       map(([projIncome, projExpense]) => projIncome - projExpense)
     );
-  
-    // Additionally, expose recurring totals for display if needed
-    this.pendingRecurringIncome = recurringIncome;
-    this.pendingRecurringExpense = recurringExpense;
   }
-  
-  
 
   handleDateChange(event: any) {
     const newDate: string = event.detail.value;
-    this.selectedDate = newDate; // Update local state if needed
-    this.dateSelectionService.setSelectedDate(newDate); // Update shared state
-    this.displayedMonth = new Date(newDate); // Update displayed month
-    this.loadTotals(); // Reload totals based on new date
+    this.selectedDate = newDate;
+    this.displayedMonth = new Date(newDate);
+    this.isCurrentMonth = this.checkIfCurrentMonth(newDate);
+    this.subscriptions.unsubscribe
+    this.loadInitialData();
   }
 
   selectCurrentMonth() {
@@ -112,6 +146,6 @@ export class DashboardPage implements OnInit {
   }
 
   ngOnDestroy() {
-    this.subscriptions.unsubscribe();  // Clean up subscriptions to prevent memory leaks
+    this.subscriptions.unsubscribe();
   }
 }

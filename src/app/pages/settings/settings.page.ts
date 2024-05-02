@@ -1,4 +1,5 @@
 import { Component, OnInit } from '@angular/core';
+import { SettingsService } from '../../services/settings.service';
 
 @Component({
   selector: 'app-settings',
@@ -6,14 +7,27 @@ import { Component, OnInit } from '@angular/core';
   styleUrls: ['./settings.page.scss'],
 })
 export class SettingsPage implements OnInit {
-    darkModeEnabled: boolean = false;
+  darkModeEnabled: boolean = false;
+  cumulativeViewEnabled: boolean = false;
 
-    constructor() { }
+  constructor(private settingsService: SettingsService) {}
 
-    ngOnInit() { }
+  ngOnInit() {
+    this.settingsService.darkModeEnabled$.subscribe(enabled => {
+      this.darkModeEnabled = enabled;
+    });
+    this.settingsService.cumulativeViewEnabled$.subscribe(enabled => {
+      this.cumulativeViewEnabled = enabled;
+    });
+  }
 
-    toggleDarkMode() {
-        this.darkModeEnabled = !this.darkModeEnabled;
-        document.body.classList.toggle('dark', this.darkModeEnabled);
-    }
+  toggleDarkMode(event: any) {
+    const newState = event.detail.checked;
+    this.settingsService.setDarkModeEnabled(newState);
+  }
+
+  toggleCumulativeView(event: any) {
+    const newState = event.detail.checked;
+    this.settingsService.setCumulativeViewEnabled(newState);
+  }
 }

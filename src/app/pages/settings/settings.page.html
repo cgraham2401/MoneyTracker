@@ -11,7 +11,12 @@
   <ion-list>
     <ion-item>
       <ion-label>Dark Mode</ion-label>
-      <ion-toggle checked="{{darkModeEnabled}}" (ionChange)="toggleDarkMode()"></ion-toggle>
+      <ion-toggle checked="{{darkModeEnabled}}" (ionChange)="toggleDarkMode($event)"></ion-toggle>
+    </ion-item>
+    <ion-item>
+      <ion-label>Toggle Cumulative View</ion-label>
+      <ion-toggle checked="{{cumulativeViewEnabled}}" (ionChange)="toggleCumulativeView($event)"></ion-toggle>
     </ion-item>
   </ion-list>
 </ion-content>
+

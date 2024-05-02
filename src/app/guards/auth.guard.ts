@@ -1,13 +1,10 @@
-import { ActivatedRouteSnapshot, RouterStateSnapshot, UrlTree, Router, CanActivateFn } from '@angular/router';
+import { Router } from '@angular/router';
 import { AngularFireAuth } from '@angular/fire/compat/auth';
 import { inject } from '@angular/core';
 import { map, catchError, of } from 'rxjs';
 
 // Define a canActivate function
-export const canActivateAuth: CanActivateFn = (
-  route: ActivatedRouteSnapshot,
-  state: RouterStateSnapshot
-) => {
+export const canActivateAuth = () => {
   const auth = inject(AngularFireAuth);
   const router = inject(Router);
 

@@ -74,19 +74,47 @@ export class TransactionsPage implements OnInit, OnDestroy {
   }
 
   loadTransactions(userId: string, date: Date) {
+    // Load all submitted transactions without filtering by type
     this.transactionService.getTransactionsByUserIdAndDate(userId, date)
       .subscribe(transactions => {
         this.submittedTransactions = transactions.filter(t => t.isSubmitted);
-        this.upcomingRecurringTransactions = transactions.filter(t => t.recurrence !== 'none' && t.nextDueDate && // Ensure nextDueDate is defined
-        (
-            new Date(t.nextDueDate.toDate()).getTime() <= new Date().getTime() + 7 * 24 * 60 * 60 * 1000 // Upcoming or overdue within the next 7 days
-        ),
-        this.hasTransactions = transactions.length > 0);
+        this.hasTransactions = transactions.length > 0;
+
+        // Fetch upcoming and overdue recurring transactions
+        this.loadUpcomingRecurringTransactions(userId);
       }, error => {
         console.error('Error loading transactions:', error);
         this.hasTransactions = false;
       });
+}
+
+loadUpcomingRecurringTransactions(userId: string) {
+  const selectedDate = new Date(this.selectedDate);  // This is the month/year the user has selected
+  const startDate = new Date(selectedDate.getFullYear(), selectedDate.getMonth(), 1);
+  const endOfMonth = new Date(selectedDate.getFullYear(), selectedDate.getMonth() + 1, 0);
+
+  const currentDate = new Date();
+  const sevenDaysLater = new Date(currentDate.getTime() + 7 * 24 * 60 * 60 * 1000);
+  const isCurrentMonth = currentDate.getMonth() === selectedDate.getMonth() && currentDate.getFullYear() === selectedDate.getFullYear();
+
+  // Adjust the endDate based on whether the selected month is the current month
+  let effectiveEndDate = isCurrentMonth ? sevenDaysLater : endOfMonth;
+  if (sevenDaysLater > endOfMonth && isCurrentMonth) {
+      effectiveEndDate = sevenDaysLater;
+  } else {
+      effectiveEndDate = endOfMonth;
   }
+
+  this.transactionService.getRecurringTransactionsByUserIdAndDate(userId, startDate, effectiveEndDate)
+    .subscribe(transactions => {
+      this.upcomingRecurringTransactions = transactions.filter(t => {
+        const nextDue = t.nextDueDate ? new Date(t.nextDueDate.toDate()) : null;
+        return nextDue && nextDue >= startDate && nextDue <= effectiveEndDate;
+      });
+      console.log('Upcoming Recurring Transactions:', transactions);
+    });
+}
+
 
   logTransactionIdAndResubmit(transactionId: string | undefined) {
     this.authService.currentUserId$.subscribe(userId => {

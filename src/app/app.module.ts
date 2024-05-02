@@ -10,6 +10,7 @@ import { HttpClientModule } from '@angular/common/http';
 import { AngularFireModule } from '@angular/fire/compat';
 import { AngularFirestoreModule } from '@angular/fire/compat/firestore';
 import { AngularFireAuthModule } from '@angular/fire/compat/auth';
+import { IonicStorageModule } from '@ionic/storage-angular';
 import { environment } from 'src/environments/environment';
 
 // Firebase configuration
@@ -33,6 +34,7 @@ const firebaseConfig = {
     AngularFirestoreModule,  // Firebase database module
     AngularFireAuthModule,
     HttpClientModule,
+    IonicStorageModule.forRoot() 
   ],
   providers: [{ provide: RouteReuseStrategy, useClass: IonicRouteStrategy }],
   bootstrap: [AppComponent],
