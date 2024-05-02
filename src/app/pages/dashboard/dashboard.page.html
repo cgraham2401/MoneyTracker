@@ -26,11 +26,12 @@
     
     <div *ngIf="toggleCumulative">
       <ion-item>
-        <ion-label>Current Balance:
-        <ion-badge color="primary">{{ cumulativeBalance | currency }}</ion-badge>
-      </ion-label>
+        <ion-label>{{ isCurrentMonth ? 'Current Balance:' : 'Month-end Balance:' }}
+          <ion-badge color="primary">{{ cumulativeBalance | currency }}</ion-badge>
+        </ion-label>
       </ion-item>
     </div>
+    
 
     <!-- Income total label changes based on month context -->
     <ion-item>
