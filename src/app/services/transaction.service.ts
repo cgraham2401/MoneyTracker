@@ -133,25 +133,29 @@ getTransactionsUpToDate(userId: string, endDate: Date): Observable<Transaction[]
     }
 
     getRecurringTransactionsByTypeAndUserIdAndDate(type: string, userId: string, startDate: Date, endOfMonth: Date, sevenDaysLater: Date, currentMonth: boolean): Observable<Transaction[]> {
-    const endDate = currentMonth ? sevenDaysLater : endOfMonth; // Use sevenDaysLater only if currentMonth is true
-
-    return this.firestore.collection<Transaction>(`users/${userId}/transactions`, ref =>
-        ref.where('type', '==', type)
-           .where('recurrence', '!=', 'none')
-           .where('nextDueDate', '<=', endDate))
-    .snapshotChanges()
-    .pipe(
-        map(actions => actions.map(a => {
-            const data = a.payload.doc.data() as Transaction;
-            const id = a.payload.doc.id;
-            return { id, ...data };
-        })),
-        map(transactions => transactions.filter(t =>
-            t.nextDueDate && // Ensure nextDueDate exists
-            new Date(t.nextDueDate.toDate()).getTime() >= startDate.getTime() &&
-            new Date(t.nextDueDate.toDate()).getTime() <= endDate.getTime()))
-    );
-}
+      // Use sevenDaysLater only if it's the current month and the date exceeds the end of month
+      const endDate = currentMonth && sevenDaysLater > endOfMonth ? sevenDaysLater : endOfMonth;
+    
+      return this.firestore.collection<Transaction>(`users/${userId}/transactions`, ref =>
+          ref.where('type', '==', type)
+             .where('recurrence', '!=', 'none')
+             .where('nextDueDate', '>=', startDate)
+             .where('nextDueDate', '<=', endDate)
+             .orderBy('nextDueDate'))
+      .snapshotChanges()
+      .pipe(
+          map(actions => actions.map(a => {
+              const data = a.payload.doc.data() as Transaction;
+              const id = a.payload.doc.id;
+              return { id, ...data };
+          })),
+          map(transactions => transactions.filter(t =>
+              t.nextDueDate && // Ensure nextDueDate exists
+              new Date(t.nextDueDate.toDate()).getTime() >= startDate.getTime() &&
+              new Date(t.nextDueDate.toDate()).getTime() <= endDate.getTime()))
+      );
+    }
+    
 
 
 

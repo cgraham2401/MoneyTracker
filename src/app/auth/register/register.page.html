@@ -7,11 +7,17 @@
 <ion-content>
   <ion-item>
     <ion-label position="floating">Email</ion-label>
-    <ion-input [(ngModel)]="email" type="email"></ion-input>
+    <ion-input [(ngModel)]="email" type="email" required></ion-input>
   </ion-item>
   <ion-item>
     <ion-label position="floating">Password</ion-label>
-    <ion-input [(ngModel)]="password" type="password"></ion-input>
+    <ion-input [(ngModel)]="password" type="password" required></ion-input>
   </ion-item>
+  <ion-text color="medium">
+    <p>Password must be at least 8 characters and include a number, an uppercase letter, and a special character.</p>
+  </ion-text>
   <ion-button expand="block" (click)="register()">Register</ion-button>
+  <ion-text color="danger" *ngIf="passwordError">
+    <p>{{ passwordError }}</p>
+  </ion-text>
 </ion-content>

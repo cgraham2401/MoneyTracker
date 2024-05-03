@@ -9,7 +9,7 @@ export interface Transaction {
     category: string;
     description?: string;
     recurrence: 'none' | 'weekly' | 'biweekly' | 'monthly';
-    nextDueDate?: Timestamp;
+    nextDueDate?: Timestamp | null;
     isSubmitted?: boolean;
     isOverdue?: boolean;
 }

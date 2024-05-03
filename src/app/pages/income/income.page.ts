@@ -87,7 +87,7 @@ export class IncomePage implements OnInit, OnDestroy {
 }
 
 loadUpcomingRecurringTransactions(userId: string) {
-  const selectedDate = new Date(this.selectedDate);  // Assumes this.selectedDate is already set to the desired month/year
+  const selectedDate = new Date(this.selectedDate);
   const startDate = new Date(selectedDate.getFullYear(), selectedDate.getMonth(), 1);
   const endOfMonth = new Date(selectedDate.getFullYear(), selectedDate.getMonth() + 1, 0);
   
@@ -95,28 +95,27 @@ loadUpcomingRecurringTransactions(userId: string) {
   const sevenDaysLater = new Date(currentDate.getTime() + 7 * 24 * 60 * 60 * 1000);
   const isCurrentMonth = currentDate.getMonth() === selectedDate.getMonth() && currentDate.getFullYear() === selectedDate.getFullYear();
 
-  let effectiveEndDate = endOfMonth;
-  if (isCurrentMonth) {
-      effectiveEndDate = sevenDaysLater > endOfMonth ? sevenDaysLater : endOfMonth;
-  }
+  // Determine the effective end date to use for fetching transactions
+  let effectiveEndDate = isCurrentMonth && sevenDaysLater > endOfMonth ? sevenDaysLater : endOfMonth;
 
-  // Pass the additional parameters required by the service function
   this.transactionService.getRecurringTransactionsByTypeAndUserIdAndDate(
     'income', 
     userId, 
     startDate, 
-    endOfMonth,  // Assumes that you want transactions up to the end of the selected month
-    sevenDaysLater, // The date seven days from now, used for filtering within the next week
-    isCurrentMonth  // Boolean indicating whether the selected month is the current month
+    sevenDaysLater,
+    effectiveEndDate,
+    isCurrentMonth  // Indicate whether the selected month is the current month
   )
   .subscribe(transactions => {
-      console.log('Upcoming Recurring Transactions:', transactions);
       this.upcomingRecurringTransactions = transactions.filter(t => {
           const nextDue = t.nextDueDate ? new Date(t.nextDueDate.toDate()) : null;
           return nextDue && nextDue >= startDate && nextDue <= effectiveEndDate;
       });
+      console.log('Upcoming Recurring Transactions:', transactions);
   });
 }
+
+
 
 
 logTransactionIdAndResubmit(transactionId: string | undefined) {

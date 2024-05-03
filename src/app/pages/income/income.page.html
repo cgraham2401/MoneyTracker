@@ -199,7 +199,7 @@
 <ion-popover trigger="open-date-btn" [keepContentsMounted]="true" alignment="center" mode="ios" animated="false">
   <ng-template>
     <ion-datetime
-      name = dueDate
+      name = "nextDueDate"
       presentation="date"
       id="nextDueDateBtn"
       [(ngModel)]="formValues.nextDueDate"
@@ -213,7 +213,7 @@
 </ion-popover>
 
       
-<ion-button type="submit" expand="block">{{ editMode ? 'Update' : 'Submit' }}</ion-button>
+<ion-button type="submit" expand="block" [disabled]="!incomeForm.valid">{{ editMode ? 'Update' : 'Submit' }}</ion-button>
 <ion-button expand="block" (click)="resetForm()">Cancel</ion-button>
     </form>
   </div>

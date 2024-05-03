@@ -157,7 +157,7 @@
   <form #transactionForm="ngForm" (ngSubmit)="addTransaction(transactionForm.value); showAddForm = false;">
     <ion-item>
       <ion-label>Transaction Type</ion-label>
-      <ion-select name="type" [(ngModel)]="formValues.type" required>
+      <ion-select name="type" [(ngModel)]="formValues.type" placeholder="Select One" required>
         <ion-select-option value="income">Income</ion-select-option>
         <ion-select-option value="expense">Expense</ion-select-option>
       </ion-select>
@@ -208,7 +208,7 @@
 <ion-popover trigger="open-date-btn" [keepContentsMounted]="true" alignment="center" mode="ios" animated="false">
   <ng-template>
     <ion-datetime
-      name = "dueDate"
+      name = "nextDueDate"
       presentation="date"
       id="nextDueDateBtn"
       [(ngModel)]="formValues.nextDueDate"
@@ -221,7 +221,7 @@
   </ng-template>
 </ion-popover>
 
-<ion-button type="submit" expand="block">{{ editMode ? 'Update' : 'Submit' }}</ion-button>
+<ion-button type="submit" expand="block" [disabled]="!transactionForm.valid">{{ editMode ? 'Update' : 'Submit' }}</ion-button>
 <ion-button expand="block" (click)="resetForm()">Cancel</ion-button>
 </form>
 </div>
