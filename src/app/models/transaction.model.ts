@@ -8,8 +8,9 @@ export interface Transaction {
     date: Timestamp;
     category: string;
     description?: string;
-    recurrence?: 'none' | 'weekly' | 'biweekly' | 'monthly';
+    recurrence: 'none' | 'weekly' | 'biweekly' | 'monthly';
     nextDueDate?: Timestamp;
     isSubmitted?: boolean;
     isOverdue?: boolean;
 }
+

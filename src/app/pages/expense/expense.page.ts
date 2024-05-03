@@ -30,6 +30,9 @@ export class ExpensePage implements OnInit, OnDestroy {
   hasTransactions: boolean = false;
   submittedTransactions: Transaction[] = [];
   upcomingRecurringTransactions: Transaction[] = [];
+  isDesktop: boolean = true;
+  editMode = false;
+  editingTransactionId: string | null = null;
 
 
   constructor(
@@ -37,7 +40,9 @@ export class ExpensePage implements OnInit, OnDestroy {
     private transactionService: TransactionService,
     private dateSelectionService: DateSelectionService,
     private firestore: AngularFirestore,
-  ) {}
+  ) {
+    this.checkScreenSize();
+  }
 
   ngOnInit() {
     this.fetchCategories(); // Ensure categories are fetched at component initialization
@@ -47,6 +52,10 @@ export class ExpensePage implements OnInit, OnDestroy {
       this.loadTransactions();
     }));
     this.loadTransactions(); // Load initially
+  }
+
+  checkScreenSize() {
+    this.isDesktop = window.innerWidth >= 768; 
   }
 
   loadTransactions() {
@@ -170,29 +179,106 @@ deleteTransaction(transactionId: string | undefined) {
       );
   }
 
-  addTransaction(formValues: any) {
-    const transaction: Transaction = {
-        amount: formValues.amount,
-        type: 'expense',
-        date: Timestamp.fromDate(new Date(formValues.date)), // Original transaction date
-        category: formValues.category,
-        description: formValues.description || '',
-        payee: formValues.payee,
-        recurrence: formValues.recurrence, // Capturing the recurrence from the form
-        nextDueDate: formValues.recurrence !== 'none' && formValues.nextDueDate
-                     ? Timestamp.fromDate(new Date(formValues.nextDueDate))
-                     : Timestamp.now(), // Use current timestamp if nextDueDate is not provided
-        isSubmitted: true, // Assuming the transaction is submitted when added
-        isOverdue: false // Defaulting to false upon creation
-    };
+  initialFormValues = {
+    date: '',
+    amount: null as number | null,
+    type: '',
+    category: '',
+    description: '',
+    payee: '',
+    recurrence: 'none',
+    nextDueDate: null
+  };
 
-    console.log('Attempting to add income transaction:', transaction);
-    this.transactionService.addTransaction(transaction).then(() => {
-        console.log('Income Transaction added successfully!');
-        this.showAddForm = false; // Hide the form upon successful addition
+  formValues = {
+    date: new Date().toISOString(),
+    recurrence: 'none',
+    nextDueDate: null as string | null, // Allow both string and null types
+    amount: null as number| null,
+    type: '',
+    category: '',
+    description: '',
+    payee: ''
+};
+
+
+  updateNextDueDate() {
+    if (this.formValues.recurrence !== 'none' && this.formValues.date) {
+        let baseDate = new Date(this.formValues.date);
+        switch (this.formValues.recurrence) {
+            case 'weekly':
+                baseDate.setDate(baseDate.getDate() + 7);
+                break;
+            case 'biweekly':
+                baseDate.setDate(baseDate.getDate() + 14);
+                break;
+            case 'monthly':
+                baseDate.setMonth(baseDate.getMonth() + 1);
+                break;
+        }
+        this.formValues.nextDueDate = baseDate.toISOString();
+    } else {
+        this.formValues.nextDueDate = null; // Clear next due date if recurrence is none
+    }
+}
+
+updateDueDateFromPicker(event: any) {
+  this.formValues.nextDueDate = event.detail.value ?? null;
+}
+
+editTransaction(transaction: Transaction) {
+  this.editMode = true;
+  this.editingTransactionId = transaction.id || null; 
+  this.formValues = {
+      date: transaction.date.toDate().toISOString(),
+      amount: transaction.amount,  
+      type: transaction.type,
+      category: transaction.category,
+      description: transaction.description || '',
+      payee: transaction.payee,
+      recurrence: transaction.recurrence || 'none',
+      nextDueDate: transaction.nextDueDate ? transaction.nextDueDate.toDate().toISOString() : null
+  };
+  this.showAddForm = true;
+}
+
+
+addTransaction(formValues: any) {
+  let transaction: Transaction = {
+    amount: formValues.amount,
+    type: 'expense',
+    date: Timestamp.fromDate(new Date(formValues.date)),
+    category: formValues.category,
+    description: formValues.description || '',
+    payee: formValues.payee,
+    recurrence: formValues.recurrence,
+    nextDueDate: formValues.nextDueDate ? Timestamp.fromDate(new Date(formValues.nextDueDate)) : Timestamp.now(),
+    isSubmitted: true,
+    isOverdue: false
+  };
+
+  if (this.editMode && this.editingTransactionId) {
+    this.transactionService.updateTransaction(this.editingTransactionId, transaction).then(() => {
+      console.log('Transaction updated successfully!');
+      this.resetForm();
     }).catch((error: any) => {
-        console.error('Error adding income transaction:', error);
+      console.error('Error updating transaction:', error);
     });
+  } else {
+    this.transactionService.addTransaction(transaction).then(() => {
+      console.log('Transaction added successfully!');
+      this.resetForm();
+    }).catch((error: any) => {
+      console.error('Error adding transaction:', error);
+    });
+  }
+}
+
+resetForm() {
+  this.showAddForm = false;
+  this.editMode = false;
+  this.editingTransactionId = null;
+  this.formValues = { ...this.initialFormValues }; // Ensure to spread a copy of the initial values
 }
 
   selectCurrentMonth() {

@@ -253,6 +253,23 @@ deleteTransaction(transactionId: string): Promise<void> {
   ).toPromise();
 }
 
+updateTransaction(transactionId: string, transaction: Partial<Transaction>): Promise<void> {
+  return this.afAuth.authState.pipe(
+    take(1),
+    switchMap(user => {
+      if (!user) {
+        throw new Error('No authenticated user available');
+      }
+      return this.firestore.collection(`users/${user.uid}/transactions`).doc(transactionId).update(transaction);
+    }),
+    tap(() => console.log('Transaction updated successfully')),
+    catchError(error => {
+      console.error('Error updating transaction:', error);
+      throw error;
+    })
+  ).toPromise();
+}
+
 
 getRecurringTotalsByTypeAndDateRange(type: string, userId: string, startDate: Date, endDate: Date): Observable<number> {
   const startTimestamp = Timestamp.fromDate(startDate);

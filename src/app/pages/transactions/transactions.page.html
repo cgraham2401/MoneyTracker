@@ -10,15 +10,18 @@
 <ion-content>
    <ion-button (click)="selectCurrentMonth()">Current Month</ion-button>
    <!-- <ion-button (click)="selectLastThreeMonths()">Last 3 Months</ion-button> -->
-   
+
    <ion-item>
     <ion-label>Choose Month:</ion-label>
     <ion-button fill="clear" (click)="openCalendar()">
       {{ displayedMonth | date: 'MMMM yyyy' }}  <!-- Display the formatted date -->
     </ion-button>
   </ion-item>
- 
-   <!-- Table for Submitted Transactions -->
+
+   <!-- Conditional Rendering Based on Screen Size -->
+   <div *ngIf="isDesktop; else mobileView">
+    <!-- Desktop Specific Layout -->
+     <!-- Table for Submitted Transactions -->
    <ion-grid *ngIf="submittedTransactions.length > 0; else noTransactionsTemplate">
     <ion-row>
       <ion-col colspan="6">
@@ -42,6 +45,7 @@
       <ion-col>{{ transaction.category }}</ion-col>
       <ion-col>{{ transaction.amount | currency }}</ion-col>
       <ion-col>
+        <ion-button (click)="editTransaction(transaction)" color="secondary">Edit</ion-button>
         <ion-button (click)="deleteTransaction(transaction.id)" color="danger">Delete</ion-button>
       </ion-col>
     </ion-row>
@@ -76,6 +80,68 @@
       </ion-col>
     </ion-row>
   </ion-grid>
+  </div>
+
+  <ng-template #mobileView>
+    <!-- Mobile Specific Layout -->
+    <!-- Table for Submitted Transactions -->
+   <div *ngIf="submittedTransactions.length > 0; else noTransactionsTemplate">
+    <ion-grid>
+      <ion-row>
+        <ion-col size="12">
+          <h2>Submitted Transactions</h2>
+        </ion-col>
+      </ion-row>
+      <ion-row *ngFor="let transaction of submittedTransactions">
+        <ion-col size="12">
+          <ion-card>
+            <ion-card-header>
+              <ion-card-subtitle>{{ transaction.date.toDate() | date:'mediumDate' }} </ion-card-subtitle>
+              <ion-card-title>{{ transaction.category }}</ion-card-title>
+            </ion-card-header>
+            <ion-card-content>
+              <strong>Type: {{ transaction.type }}</strong><br>
+              Payee: {{ transaction.payee }}<br>
+              Description: {{ transaction.description }}<br>
+              Amount: {{ transaction.amount | currency }}<br>
+              <ion-button fill="outline" color="secondary" (click)="editTransaction(transaction)">Edit</ion-button>
+              <ion-button fill="outline" color="danger" (click)="deleteTransaction(transaction.id)">Delete</ion-button>
+            </ion-card-content>
+          </ion-card>
+        </ion-col>
+      </ion-row>
+    </ion-grid>
+  </div>
+
+  <!-- Table for Upcoming Recurring Transactions -->
+  <div *ngIf="upcomingRecurringTransactions.length > 0">
+    <ion-grid>
+      <ion-row>
+        <ion-col size="12">
+          <h2>Upcoming Recurring Transactions</h2>
+        </ion-col>
+      </ion-row>
+      <ion-row *ngFor="let transaction of upcomingRecurringTransactions">
+        <ion-col size="12">
+          <ion-card>
+            <ion-card-header>
+              <ion-card-subtitle>Due: {{ transaction.nextDueDate?.toDate() | date:'mediumDate' }}</ion-card-subtitle>
+              <ion-card-title>{{ transaction.category }}</ion-card-title>
+            </ion-card-header>
+            <ion-card-content>
+              <strong>Type: {{ transaction.type }}</strong><br>
+              Payee: {{ transaction.payee }}<br>
+              Description: {{ transaction.description }}<br>
+              Amount: {{ transaction.amount | currency }}<br>
+              <ion-button (click)="logTransactionIdAndResubmit(transaction.id)">Submit</ion-button>
+              <ion-button color="danger" (click)="deleteTransaction(transaction.id)">Delete</ion-button>
+            </ion-card-content>
+          </ion-card>
+        </ion-col>
+      </ion-row>
+    </ion-grid>
+  </div>
+ </ng-template>
 
   <ng-template #noTransactionsTemplate>
     <ion-item>
@@ -91,29 +157,23 @@
   <form #transactionForm="ngForm" (ngSubmit)="addTransaction(transactionForm.value); showAddForm = false;">
     <ion-item>
       <ion-label>Transaction Type</ion-label>
-      <ion-select name="type" ngModel required>
+      <ion-select name="type" [(ngModel)]="formValues.type" required>
         <ion-select-option value="income">Income</ion-select-option>
         <ion-select-option value="expense">Expense</ion-select-option>
       </ion-select>
     </ion-item>
     <ion-item>
       <ion-label position="floating">Amount</ion-label>
-      <ion-input type="number" name="amount" ngModel required></ion-input>
+      <ion-input type="number" name="amount" [(ngModel)]="formValues.amount" required></ion-input>
     </ion-item>
     <ion-item>
-      <ion-label position="floating">Date</ion-label>
-      <ion-datetime
-        presentation="date"
-        display-format="MMM DD, YYYY"
-        picker-format="MMM DD YYYY"
-        name="date"
-        ngModel
-        required>
+      <ion-label position="stacked">Date</ion-label>
+      <ion-datetime name="date" presentation="date" [(ngModel)]="formValues.date" (ionChange)="updateNextDueDate()" required>
       </ion-datetime>
     </ion-item>
     <ion-item>
       <ion-label>Category</ion-label>
-      <ion-select name="category" ngModel placeholder="Select One">
+      <ion-select name="category" [(ngModel)]="formValues.category" placeholder="Select One">
         <ion-select-option *ngFor="let category of categories" [value]="category.name">
           {{ category.name }}
         </ion-select-option>
@@ -121,16 +181,15 @@
     </ion-item>
     <ion-item>
       <ion-label position="floating">Description</ion-label>
-      <ion-textarea name="description" ngModel></ion-textarea>
+      <ion-textarea name="description" [(ngModel)]="formValues.description"></ion-textarea>
     </ion-item>
     <ion-item>
       <ion-label position="floating">Payee</ion-label>
-      <ion-input type="text" name="payee" ngModel required></ion-input>
+      <ion-input type="text" name="payee" [(ngModel)]="formValues.payee" required></ion-input>
     </ion-item>
-    <!-- Recurrence Selection -->
     <ion-item>
       <ion-label>Recurrence</ion-label>
-      <ion-select placeholder="Select One" name="recurrence" ngModel>
+      <ion-select placeholder="Select One" name="recurrence" [(ngModel)]="formValues.recurrence" (ionChange)="updateNextDueDate()">
         <ion-select-option value="none">None</ion-select-option>
         <ion-select-option value="weekly">Weekly</ion-select-option>
         <ion-select-option value="biweekly">Bi-Weekly</ion-select-option>
@@ -138,16 +197,33 @@
       </ion-select>
     </ion-item>
 
-    <!-- Next Due Date Selection -->
-    <ion-item>
-      <ion-label>Next Due Date</ion-label>
-      <ion-datetime display-format="MMM DD, YYYY" picker-format="MMM DD YYYY" name="nextDueDate" ngModel></ion-datetime>
-    </ion-item>
 
-    <ion-button type="submit" expand="block">Submit</ion-button>
-    <!-- Optionally add a cancel button to hide form -->
-    <ion-button expand="block" (click)="showAddForm = false">Cancel</ion-button>
-  </form>
+  <!-- Next Due Date Selection -->
+  <ion-item>
+    <ion-label>Next Due Date: <br><strong>{{ formValues.nextDueDate | date: 'mediumDate' }}</strong></ion-label>
+    <ion-button expand="block" id="open-date-btn">Select Next Due Date</ion-button>
+  </ion-item>
+
+
+<ion-popover trigger="open-date-btn" [keepContentsMounted]="true" alignment="center" mode="ios" animated="false">
+  <ng-template>
+    <ion-datetime
+      name = dueDate
+      presentation="date"
+      id="nextDueDateBtn"
+      [(ngModel)]="formValues.nextDueDate"
+      (ionChange)="updateDueDateFromPicker($event)"
+      preferWheel="false"
+      showDefaultButtons="true"
+      doneText="Set Date"
+      cancelText="Cancel">
+    </ion-datetime>
+  </ng-template>
+</ion-popover>
+
+<ion-button type="submit" expand="block">{{ editMode ? 'Update' : 'Submit' }}</ion-button>
+<ion-button expand="block" (click)="resetForm()">Cancel</ion-button>
+</form>
 </div>
 
 
@@ -155,6 +231,7 @@
 <ion-modal [keepContentsMounted]="true" [isOpen]="showCalendar" (didDismiss)="cancelCalendar()">
   <ng-template>
     <ion-datetime
+      name = "selectedDate"
       id="datetime"
       presentation="month-year"
      [showDefaultButtons]="true"

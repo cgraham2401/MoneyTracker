@@ -54,6 +54,8 @@ $colors: (
   --ion-toolbar-background: #2c2c2d;
   --ion-tab-bar-background: #2c2c2d;
   --ion-content-background: #121212;
+  --ion-card-background:#272727;
+  --ion-card-color: #ffffff;
   
   ion-menu {
     --background: #1f1f1f;  // Specific styles for the menu in dark mode
@@ -68,13 +70,19 @@ $colors: (
     --background: var(--ion-toolbar-background);
   }
   
- 
-  
-  
-  
- 
+  ion-card {
+    --background: var(--ion-card-background);
+    --color: var(--ion-card-color);  
+  }
 
+  ion-card-title, ion-card-subtitle, ion-card-content {
+    --color: var(--ion-card-color);  // Specifically set the text color for titles and subtitles
+  }
 
+  ion-button {
+    --fill: "outline"
+  }
+ 
 
 }
 .ion-palette-dark ion-item {
