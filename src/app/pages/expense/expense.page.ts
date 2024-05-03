@@ -164,6 +164,25 @@ deleteTransaction(transactionId: string | undefined) {
   }
 }
 
+endTransactionRecurrence(transactionId: string | undefined) {
+  if (!transactionId) {
+    console.error('Transaction ID is undefined, cannot modify');
+    return;
+  }
+
+  // Add a confirmation dialog
+  if (confirm('Are you sure you want to end the recurrence for this transaction?')) {
+    this.transactionService.endTransactionRecurrence(transactionId).then(() => {
+      console.log(`Recurrence for transaction ID ${transactionId} was ended successfully.`);
+      // Optionally refresh the list or handle the UI update
+    }).catch(error => {
+      console.error(`Failed to end recurrence for transaction ID ${transactionId}:`, error);
+    });
+  } else {
+    console.log('Action cancelled.');
+  }
+}
+
   fetchCategories() {
     this.firestore.collection<Category>('categories', ref => ref.where('type', '==', 'expense'))
       .valueChanges({ idField: 'id' }) // Corrected method name

@@ -26,7 +26,7 @@
     
     <div *ngIf="toggleCumulative">
       <ion-item>
-        <ion-label>{{ isCurrentMonth ? 'Current Balance:' : 'Month-end Balance:' }}
+        <ion-label>{{ isCurrentMonth ? 'Current Balance:' : 'Month-end Balance:' }} <br>
           <ion-badge color="primary">{{ cumulativeBalance | currency }}</ion-badge>
         </ion-label>
       </ion-item>
@@ -35,21 +35,21 @@
 
     <!-- Income total label changes based on month context -->
     <ion-item>
-      <ion-label>{{ isCurrentMonth ? 'Current Total Income:' : 'Total Income:' }}
+      <ion-label>{{ isCurrentMonth ? 'Current Total Income:' : 'Total Income:' }} <br>
         <ion-badge color="success">{{ incomeTotal | async | currency }}</ion-badge>
       </ion-label>
     </ion-item>
 
     <!-- Expense total label changes based on month context -->
     <ion-item>
-      <ion-label>{{ isCurrentMonth ? 'Current Total Expenses:' : 'Total Expenses:' }}
+      <ion-label>{{ isCurrentMonth ? 'Current Total Expenses:' : 'Total Expenses:' }} <br>
         <ion-badge color="danger">{{ expenseTotal | async | currency }}</ion-badge>
       </ion-label>
     </ion-item>
     
     <!-- Net total label changes based on month context -->
     <ion-item>
-      <ion-label>{{ isCurrentMonth ? 'Current Net Total:' : 'Net Total:' }}
+      <ion-label>{{ isCurrentMonth ? 'Current Net Total:' : 'Net Total:' }} <br>
         <ion-badge color="primary">{{ netTotal | async | currency }}</ion-badge>
       </ion-label>
     </ion-item>
@@ -57,31 +57,31 @@
     <!-- Projected financials, shown only for the current month -->
     <div *ngIf="isCurrentMonth">
       <ion-item>
-        <ion-label>Projected Income This Month:
+        <ion-label>Projected Income This Month: <br>
           <ion-badge color="success">{{ projectedIncome | async | currency }}</ion-badge>
         </ion-label>
       </ion-item>
 
       <ion-item>
-        <ion-label>Upcoming Recurring Income:
+        <ion-label>Upcoming Recurring Income: <br>
           <ion-badge color="secondary">{{ pendingRecurringIncome | async | currency }}</ion-badge>
         </ion-label>
       </ion-item>
 
       <ion-item>
-        <ion-label>Projected Expenses This Month:
+        <ion-label>Projected Expenses This Month: <br>
           <ion-badge color="danger">{{ projectedExpense | async | currency }}</ion-badge>
         </ion-label>
       </ion-item>
 
       <ion-item>
-        <ion-label>Upcoming Recurring Expense:
+        <ion-label>Upcoming Recurring Expense: <br>
           <ion-badge color="warning">{{ pendingRecurringExpense | async | currency }}</ion-badge>
         </ion-label>
       </ion-item>
 
       <ion-item>
-        <ion-label>Projected Net Balance This Month:
+        <ion-label>Projected Net Balance This Month: <br>
           <ion-badge color="primary">{{ projectedNetTotal | async | currency }}</ion-badge>
         </ion-label>
       </ion-item>

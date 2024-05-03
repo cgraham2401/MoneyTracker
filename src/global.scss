@@ -97,3 +97,28 @@ $colors: (
   @include apply-palette($colors);
 
 }
+
+/* Global styles for ion-grid to show grid lines */
+ion-grid {
+  --ion-grid-column-border: 1px solid #a3a0a0;
+  --ion-grid-row-border: 1px solid #a3a0a0;
+}
+
+ion-row {
+  border-bottom: var(--ion-grid-row-border);
+}
+
+ion-col {
+  border-right: var(--ion-grid-column-border);
+  padding: 8px;  /* Adjust padding for better cell spacing */
+}
+
+/* Remove the right border from the last column */
+ion-col:last-child {
+  border-right: none;
+}
+
+/* Optional: Style for the header row */
+.header-row ion-col {
+  font-weight: bold;
+}

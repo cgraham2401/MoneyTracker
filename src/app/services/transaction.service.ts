@@ -253,6 +253,23 @@ deleteTransaction(transactionId: string): Promise<void> {
   ).toPromise();
 }
 
+endTransactionRecurrence(transactionId: string): Promise<void> {
+  return this.afAuth.authState.pipe(
+    take(1),
+    switchMap(user => {
+      if (!user) throw new Error('No authenticated user available');
+      return this.firestore.collection(`users/${user.uid}/transactions`).doc(transactionId).update({
+        recurrence: 'none'
+      });
+    }),
+    tap(() => console.log('Recurrence ended successfully')),
+    catchError(error => {
+      console.error('Error ending recurrence:', error);
+      throw error;
+    })
+  ).toPromise();
+}
+
 updateTransaction(transactionId: string, transaction: Partial<Transaction>): Promise<void> {
   return this.afAuth.authState.pipe(
     take(1),

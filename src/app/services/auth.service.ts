@@ -19,4 +19,13 @@ export class AuthService {
       map(user => user ? user.uid : null)
     );
   }
+
+  resetPassword(email: string): Promise<void> {
+    return this.afAuth.sendPasswordResetEmail(email);
+  }
+
+  confirmResetPassword(password: string, code: string): Promise<void> {
+    return this.afAuth.confirmPasswordReset(code, password);
+  }
+
 }

@@ -28,7 +28,7 @@
         <h2>Submitted Transactions</h2>
       </ion-col>
     </ion-row>
-    <ion-row>
+    <ion-row class="header-row">
       <ion-col>Date</ion-col>
       <ion-col>Type</ion-col>
       <ion-col>Payee</ion-col>
@@ -58,7 +58,7 @@
         <h2>Upcoming Recurring Transactions</h2>
       </ion-col>
     </ion-row>
-    <ion-row>
+    <ion-row class="header-row">
       <ion-col>Next Due Date</ion-col>
       <ion-col>Type</ion-col>
       <ion-col>Payee</ion-col>
@@ -76,7 +76,7 @@
       <ion-col>{{ transaction.amount | currency }}</ion-col>
       <ion-col>
         <ion-button (click)="logTransactionIdAndResubmit(transaction.id)">Submit</ion-button>
-        <ion-button (click)="deleteTransaction(transaction.id)" color="danger">Delete</ion-button>
+        <ion-button (click)="endTransactionRecurrence(transaction.id)" color="danger">End Recurrence</ion-button>
       </ion-col>
     </ion-row>
   </ion-grid>
@@ -134,7 +134,7 @@
               Description: {{ transaction.description }}<br>
               Amount: {{ transaction.amount | currency }}<br>
               <ion-button (click)="logTransactionIdAndResubmit(transaction.id)">Submit</ion-button>
-              <ion-button color="danger" (click)="deleteTransaction(transaction.id)">Delete</ion-button>
+              <ion-button (click)="endTransactionRecurrence(transaction.id)" color="danger">End Recurrence</ion-button>
             </ion-card-content>
           </ion-card>
         </ion-col>
@@ -208,7 +208,7 @@
 <ion-popover trigger="open-date-btn" [keepContentsMounted]="true" alignment="center" mode="ios" animated="false">
   <ng-template>
     <ion-datetime
-      name = dueDate
+      name = "dueDate"
       presentation="date"
       id="nextDueDateBtn"
       [(ngModel)]="formValues.nextDueDate"

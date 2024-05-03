@@ -44,6 +44,7 @@ const routes: Routes = [
     path: 'expense',
     loadChildren: () => import('./pages/expense/expense.module').then( m => m.ExpensePageModule)
   },
+
 ];
 
 @NgModule({

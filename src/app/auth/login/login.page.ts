@@ -1,5 +1,6 @@
 import { Component, OnInit } from '@angular/core';
 import { AngularFireAuth } from '@angular/fire/compat/auth';
+import { AuthService } from '../../services/auth.service';
 import { Router } from '@angular/router';
 
 @Component({
@@ -12,7 +13,7 @@ export class LoginPage implements OnInit {
   password: string = '';
   errorMessage: string = '';
 
-  constructor(private afAuth: AngularFireAuth, private router: Router) { }
+  constructor(private afAuth: AngularFireAuth, private router: Router, private authService: AuthService) { }
 
   ngOnInit() {
   }
@@ -29,4 +30,25 @@ export class LoginPage implements OnInit {
       this.errorMessage = "Invalid email/password. Please try again.";
     }
   }
+
+  forgotPassword() {
+    const email = prompt('Please enter your email address to receive a password reset link.');
+    if (email && this.validateEmail(email)) {
+      this.afAuth.sendPasswordResetEmail(email).then(() => {
+        alert('If an account exists for that email, a password reset link will be sent to your email.');
+      }).catch((error) => {
+        console.error('Failed to send password reset email:', error);
+        alert('Failed to send password reset email.');
+      });
+    } else {
+      alert('Please enter a valid email address.');
+    }
+}
+
+validateEmail(email: string): boolean {
+    const re = /^(([^<>()\[\]\\.,;:\s@"]+(\.[^<>()\[\]\\.,;:\s@"]+)*)|(".+"))@((\[[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}])|(([a-zA-Z\-0-9]+\.)+[a-zA-Z]{2,}))$/;
+    return re.test(email.toLowerCase());
+}
+  
+
 }
