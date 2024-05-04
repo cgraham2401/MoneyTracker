@@ -52,15 +52,65 @@ $colors: (
 
   --ion-item-background-color: #1e2023;
   --ion-toolbar-background: #2c2c2d;
+  --ion-list-background: #121212;
   --ion-tab-bar-background: #2c2c2d;
-  --ion-content-background: #121212;
+  --ion-content-background: #2c2c2d;
   --ion-card-background:#272727;
   --ion-card-color: #ffffff;
+  --ion-color-step-150: #121212;  // Dark background for items
   
+    /* Specific styling for ion-select */
+    
+  
+  ion-select {
+    --ion-select-option-color: #ffffff;  
+    --ion-select-option-background: #121212;  
+  }
+
+  
+
+  ion-select::part(text) {
+    color: #ffffff;
+  }
+
+  // change text color of ion-select-option items
+  .alert-radio-label.sc-ion-alert-md {
+    color: #ffffff
+  }
+
+  // change text color of selected ion-select-option items
+  [aria-checked="true"].sc-ion-alert-md .alert-radio-label.sc-ion-alert-md {
+    color: var(--ion-color-step-850, #ffffff81);
+  }
+
   ion-menu {
     --background: #1f1f1f;  // Specific styles for the menu in dark mode
   }
 
+  ion-menu::part(backdrop) {
+    --background: #1f1f1f
+  }
+
+  ion-menu::part(container) {
+    --background: #1f1f1f
+  }
+
+  ion-icon {
+    color: #989aa2 ;
+  }
+
+  .list-md{
+    background: #1e2023;
+  }
+
+  // :root.md {
+    
+  //   --ion-item-background: #1e2023;
+  // }
+
+  .ion-page > ion-content:nth-child(2) > ion-list:nth-child(1){
+    -background: #1e2023
+  }
 
   ion-header {
     --background: var(--ion-toolbar-background);
@@ -82,16 +132,41 @@ $colors: (
   ion-button {
     --fill: "outline"
   }
- 
 
-}
-.ion-palette-dark ion-item {
+  ion-modal,
+  ion-popover {
+    --background: #1f1f1f;
+  }
+
+  ion-datetime {
+    --background: var(--ion-content-background);
+    --color: var(--ion-text-color);
+    --picker-opt-selected-background: #666;  // Highlight color for selected options
+    --background-rgb: 18, 18, 18;  // RGB version of the dark background
+    --wheel-highlight-background: #666;  // Adjust this color as needed
+    --wheel-highlight-border-radius: 48px;  // Rounded borders for selected item
+    --wheel-fade-background-rgb: 18, 18, 18;  // Ensures the fade matches the dark background
+  }
+
+  ion-datetime::part(wheel-item) {
+    color: #ccc;  // Light gray color for wheel items, adjust as needed
+  }
+  
+  ion-datetime::part(wheel-item-active) {
+    color: #fff;  // White color for the active (selected) wheel item
+  }
+
+  ion-item {
     --background: var(--ion-item-background-color, #1e2023);
     --color: var(--ion-text-color);
+}  
+
+ion-content {
+  --background: #1e2023;
 }
-.ion-palette-dark ion-content {
-    --background: var(--ion-background-color);
+
 }
+
 /* Applying the dark theme mixins where required */
 :root {
   @include apply-palette($colors);
@@ -138,3 +213,17 @@ md ion-header {
 .ios ion-header {
   padding-top: 0px; /* No additional padding for iOS */
 }
+
+
+  
+  
+ 
+
+  
+  // /* You may need to target the select popup specifically if the above doesn't apply as expected */
+  // .ion-palette-dark .select-interface-option {
+  //   background-color: #121212;  // Dark background for dropdown items
+  //   color: #ffffff;  // White text for readability
+  // }
+    
+
