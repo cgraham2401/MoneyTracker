@@ -1,6 +1,9 @@
 {
   "name": "MoneyTracker",
-  "integrations": {},
+  "integrations": {
+    "cordova": {},
+    "capacitor": {}
+  },
   "type": "angular",
   "id": "4073777b"
 }
