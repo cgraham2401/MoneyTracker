@@ -11,12 +11,19 @@ jobs:
 
       - name: Create environment.prod.ts
         run: |
-          mkdir -p src/environments  # Ensure the directory exists
+          mkdir -p src/environments
           echo "export const environment = {" > src/environments/environment.prod.ts
           echo "  production: true," >> src/environments/environment.prod.ts
           echo "  firebaseApiKey: '${{ secrets.FIREBASE_API_KEY }}'," >> src/environments/environment.prod.ts
           echo "};" >> src/environments/environment.prod.ts
 
+      - name: Create environment.ts
+        run: |
+          echo "export const environment = {" > src/environments/environment.ts
+          echo "  production: false," >> src/environments/environment.ts
+          echo "  firebaseApiKey: 'your-api-key-for-development'," >> src/environments/environment.ts
+          echo "};" >> src/environments/environment.ts
+      
       - run: npm ci && npm run build
       - uses: FirebaseExtended/action-hosting-deploy@v0
         with:
