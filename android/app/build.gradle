@@ -1,10 +1,10 @@
 apply plugin: 'com.android.application'
 
 android {
-    namespace "com.MoneyTracker"
+    namespace "com.Money_Tracker"
     compileSdk rootProject.ext.compileSdkVersion
     defaultConfig {
-        applicationId "com.MoneyTracker"
+        applicationId "com.Money_Tracker"
         minSdkVersion rootProject.ext.minSdkVersion
         targetSdkVersion rootProject.ext.targetSdkVersion
         versionCode 1

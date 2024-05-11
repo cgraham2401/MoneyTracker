@@ -2,6 +2,6 @@
 <resources>
     <string name="app_name">MoneyTracker</string>
     <string name="title_activity_main">MoneyTracker</string>
-    <string name="package_name">com.MoneyTracker</string>
-    <string name="custom_url_scheme">com.MoneyTracker</string>
+    <string name="package_name">com.Money_Tracker</string>
+    <string name="custom_url_scheme">com.Money_Tracker</string>
 </resources>

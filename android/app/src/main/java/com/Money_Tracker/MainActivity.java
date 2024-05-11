@@ -1,4 +1,4 @@
-package com.MoneyTracker;
+package com.Money_Tracker;
 
 import com.getcapacitor.BridgeActivity;
 

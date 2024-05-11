@@ -1,5 +1,5 @@
 {
-  "name": "MoneyTracker",
+  "name": "Money_Tracker",
   "version": "0.0.1",
   "author": "Ionic Framework",
   "homepage": "https://ionicframework.com/",
@@ -34,7 +34,6 @@
     "@ionic/angular": "^7.0.0",
     "@ionic/pro": "2.0.4",
     "@ionic/storage-angular": "^4.0.0",
-    "cordova-android": "12.0.1",
     "firebase": "^10.11.0",
     "ionicons": "^7.0.0",
     "rxjs": "~7.8.0",
@@ -74,17 +73,5 @@
     "karma-jasmine-html-reporter": "~2.1.0",
     "typescript": "5.4.5"
   },
-  "description": "An Ionic project",
-  "cordova": {
-    "plugins": {
-      "cordova-plugin-statusbar": {},
-      "cordova-plugin-device": {},
-      "cordova-plugin-splashscreen": {},
-      "cordova-plugin-ionic-webview": {},
-      "cordova-plugin-ionic-keyboard": {}
-    },
-    "platforms": [
-      "android"
-    ]
-  }
+  "description": "An Ionic project"
 }

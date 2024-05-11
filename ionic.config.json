@@ -1,5 +1,5 @@
 {
-  "name": "MoneyTracker",
+  "name": "Money_Tracker",
   "integrations": {
     "cordova": {},
     "capacitor": {}

@@ -1,7 +1,7 @@
 import type { CapacitorConfig } from '@capacitor/cli';
 
 const config: CapacitorConfig = {
-  appId: 'com.MoneyTracker',
+  appId: 'com.Money_Tracker',
   appName: 'MoneyTracker',
   webDir: 'www',
   cordova: {
